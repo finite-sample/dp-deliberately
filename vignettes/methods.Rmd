@@ -1,0 +1,205 @@
+---
+title: "Methods and interpretation"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Methods and interpretation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+library(deliberately)
+```
+
+## What is being estimated?
+
+The default target is a descriptive quantity for the observed event, session,
+group or subgroup. Equal participant weights are used for survey summaries;
+`weighted = TRUE` uses supplied weights for survey outcomes and benchmark
+comparisons. Dialogue metrics continue to describe observed participants.
+No opinion direction is defined as intrinsically good or bad.
+
+Each result names its analysis, metric, unit IDs, estimate, units, denominator,
+usable observation count, coverage, computation status and method. Missing or
+undefined estimates remain NA with a reason. Full and partial cases must not be
+silently combined to calculate a headline success rate.
+
+## Sample, selection and assignment
+
+Benchmark differences are sample minus target. Standardized differences divide
+by the supplied target-population SD; categorical levels use the Bernoulli target
+SD. The convention is a target-standardized difference, not a pooled-sample SMD.
+If recruitment attendance is supplied, sample benchmarks use known attendees;
+otherwise they describe the supplied participant roster. Missing values are
+excluded separately and the denominator is reported. A benchmark with zero target
+variance has an undefined standardized difference but an estimable raw difference.
+
+Attendance comparisons contrast known attendees and nonattendees. Logistic
+prediction uses only explicitly declared baseline variables and complete predictor
+cases. Stratified cross-validation uses up to five folds, bounded by the smaller
+attendance class. Fewer than two members in either class, separation-related
+nonconvergence, unseen factor levels or failed predictions make AUC unassessable.
+Predictive performance is not a test of ignorability or a measure of selection
+bias. No default AUC warning threshold is supplied.
+
+Assignment differences compare each intended group's baseline mean with the
+episode-wide mean, divided by the episode baseline SD. Actual assignments are
+retained for observed group outcomes. Differences between intended and actual
+assignment are separately counted. Balance never establishes randomization.
+
+## Participation
+
+For each session, present participants define the roster, including people with
+zero turns. Per-person speaking time is the union of that person's recorded turn
+intervals. Participant shares divide these durations by their sum; simultaneous
+speech by different people contributes to each person's time. The talk-time Gini
+is `sum(abs(outer(shares, shares, "-"))) / (2 * n)`. Perfect equality is not a
+normative target imposed by the package.
+
+Word counts split nonempty text on whitespace. They are a separate, language- and
+transcription-dependent measure, not an estimate of elapsed speech. Pairwise
+overlap sums intersections for different speakers; three simultaneous speakers
+create three pair contributions. It is not an interruption count. Coded
+interruptions represent incidence on coded turns, not inferred intent.
+
+Silent fraction requires full session recording coverage and identified speakers.
+Unknown attendance does not add silent participants. Partial recordings can yield
+observed talk shares but cannot establish complete-session silence. The voice
+ratio is mean focal speaker seconds divided by mean reference speaker seconds;
+unequal attendance duration remains a substantive qualification. A zero reference
+mean makes the ratio undefined.
+
+## Deliberative exchange
+
+Reason giving is the proportion of explicitly coded recommendations with a coded
+reason level of at least 1. Evidence giving uses an explicit `evidence_present`
+code where available, otherwise level 2 means evidence and levels 0/1 mean none;
+level 3 alone leaves evidence unknown. An argument responding to a reason need
+not cite evidence.
+
+Counterargument response rates use explicitly coded `response_observed`, augmented
+by accepted substantive-response links. Absence of a link does not imply no
+response. Links to other turns also expose cross-person uptake. Personal attacks,
+dismissiveness and pressure are rates among coded turns, with coding coverage
+reported against the transcript. Moderator/expert stance means use the codebook's
+declared orientation; neutrality is not inferred from low speaking time.
+
+Argument coverage is the fraction of the declared topic/perspective inventory
+linked to transcript turns. Exact session coverage requires completed argument
+coding and complete recording; otherwise only an observed lower bound is returned.
+Vetted coverage restricts to attributed reviewed arguments. Briefing coverage
+requires a linked source passage available no later than session start.
+
+Opposing-argument opportunity joins a directional pre-view, an explicitly mapped
+opposing perspective, a vetted argument and overlapping attendance. It establishes
+opportunity to encounter, not comprehension, attention, agreement or persuasion.
+
+Annotation statistics are conditional on the provided labels. Repeated codes from
+multiple coders produce an exact agreement diagnostic, not chance-corrected
+reliability. Contradictory codes require adjudication; model confidence neither
+resolves disagreements nor widens or narrows survey intervals. No inference about
+latent deliberative quality is claimed without a measurement-validation design.
+
+## Opinion change, H, P and D
+
+Let `pre` and `post` be normalized group means and `ref` a fixed baseline
+reference. Signed movement is `(post - pre) * sign(ref - pre)`. If the reference
+equals the initial group mean within `1e-12`, direction is undefined. Genuine
+zero movement with a defined direction is zero. Movement past a reference retains
+the baseline direction; it is not a change in absolute distance.
+
+* `H = SD(pre individuals) - SD(post individuals)`; positive is homogenization.
+* `P = -signed_movement(group pre, group post, midpoint)`; positive is movement
+  away from the baseline side's substantive midpoint.
+* `P_absolute = abs(post - midpoint) - abs(pre - midpoint)` is a separate measure
+  that differs when a group crosses the midpoint.
+* `D = signed_movement(contrast-population pre, contrast-population post,
+  advantaged-reference pre)`. Both focal and reference groups must be represented.
+  People outside the contrast are excluded, and the result says so.
+* `D_focal` replaces the moving population with focal members, retaining the
+  advantaged reference's baseline position.
+
+Unweighted SD uses the ordinary sample denominator. Supplied-weight SD uses
+`sum(w * (x - weighted_mean)^2) / (sum(w) - sum(w^2) / sum(w))` under a square root.
+This is a descriptive weighted SD, not a design-corrected estimator of population
+variance. Units for H/P/D are fractions of the declared scale range.
+
+Paired membership is the default: each item's pre and post summaries use the same
+people with both observations. `membership = "available"` is an explicit
+sensitivity calculation using each wave's observed respondents. It can mix
+composition change with attitude change. `n` reports paired people except on
+wave means; denominator is the supplied response roster for that item and unit.
+Event-level H/P/D operate on event-level observations; they are not averages of
+group-level H/P/D.
+
+Knowledge is scored from an explicit key or supplied correct-answer proportion.
+Gain and fraction learning use observed paired scores. Standardized gain divides
+mean change by baseline score SD; zero baseline variance leaves it undefined.
+Subgroup knowledge-gap change is `(focal - reference) post - (focal - reference) pre`.
+A negative value is not automatically improvement: interpretation depends on the
+initial gap's sign. Raw scores and their item-level changes remain inspectable.
+
+The signs and tie conventions follow the corrected `distortions` implementation
+of [Luskin et al.](https://doi.org/10.1017/S0007123421000168). These measures describe
+attitudes, not participation equality, coercion or the merits of arguments.
+
+## Group heterogeneity and inference
+
+Group partial R-squared is the reduction in residual sum of squares when group
+indicators are added to `post ~ pre`, divided by the baseline model's residual sum
+of squares. Group adjusted deviations are group means of baseline-model residuals.
+These are in-sample descriptive associations, with no default anomaly threshold.
+The statistic can be large with many small groups; assignment-based comparison
+requires the actual supported randomization mechanism.
+
+Randomization tests evaluate the sharp null that any allowed group assignment
+would leave every participant's observed outcome unchanged. Permutations preserve
+fixed group sizes, within blocks when declared. The Monte Carlo p-value is
+`(1 + number of draws >= observed statistic) / (B + 1)`. The full paired assignment
+roster is required; missing outcomes and assignment deviations block the test.
+The statistic is recomputed after every reassignment, keeping baseline measures
+fixed. These tests do not identify which interaction or moderator caused a shift.
+
+With episode-level outcomes, moderators assigned to groups are generally
+confounded with those groups. Replicated moderators get descriptive adjusted
+associations. The package explicitly refuses a separate moderator-effect claim
+when that effect cannot be distinguished from group exposure; multiple moderators
+per group require finer outcome/exposure information.
+
+Sampling intervals use the supplied full design roster and a paired-response
+domain, retaining design structure before subsetting. Taylor linearization from
+`survey` gives the SE, and a t interval uses domain design degrees of freedom.
+Weights do not establish response ignorability. Missing probability-sampling
+declaration, incomplete design fields, lonely PSUs or no residual design degrees
+of freedom yield unassessable inference. These intervals condition on scoring and
+do not incorporate annotation-model uncertainty.
+
+```{r}
+detectable_change(n = 100, sd_change = 0.2, design_effect = 1.5)
+```
+
+This precision calculation is a two-sided normal planning approximation under the
+supplied change SD and variance inflation. It does not report retrospective power
+from the observed opinion change. Subgroup calculations use subgroup n and
+explicitly chosen assumptions.
+
+## Policies and claims
+
+Policies record version, rationale, scope, required metrics, thresholds and
+coverage requirements. Conditions sharing a rule ID are ANDed. `aggregation`
+determines all/any evaluation among matching estimates, after optional item,
+contrast, detail and person selectors. Every matched value must be assessable
+before a condition can trigger, including `any` conditions. Missing coverage does
+not meet a threshold of zero.
+
+Verdicts are per rule, not a hidden overall grade. `NOT_TRIGGERED` is not PASS.
+Policies can combine concentration, missing counterarguments, learning and opinion
+change, but the causal or normative interpretation remains the researcher's.
+Exploratory group comparisons and raw randomization p-values are not adjusted for
+multiple testing; specify the testing family and adjustment externally before
+using p-values as confirmatory claims.
+
+The software records seed, configuration, table hashes, evaluated memberships,
+evidence provenance and R session information. Reproducibility does not imply
+prospective preregistration or blinded policy selection.

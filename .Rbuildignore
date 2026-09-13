@@ -1,0 +1,9 @@
+^\.github$
+^Makefile$
+^artifacts$
+^docs$
+^.*\.Rcheck$
+^.*\.tar\.gz$
+^\.lintr$
+^_pkgdown\.yml$
+^IMPLEMENTATION\.md$

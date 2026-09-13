@@ -1,0 +1,21 @@
+Package: deliberately
+Title: Evidence-Linked Audits of Deliberative Processes
+Version: 0.1.0
+Authors@R: person("Gaurav", "Sood", email = "gsood07@gmail.com",
+    role = c("aut", "cre"))
+Description: Validate deliberative polling data and produce modular diagnostics
+    of sampling, participation, deliberative exchange, and outcomes. Explicit
+    input requirements, researcher-defined contrasts and policies, and evidence
+    provenance distinguish unavailable measurements from observed results.
+    Implements signed attitude movement measures described by Luskin et al.
+    (2022) <doi:10.1017/S0007123421000168>.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Depends: R (>= 4.1.0)
+Imports: digest
+Suggests: testthat (>= 3.0.0), roxygen2, lintr, rmarkdown, knitr, pkgload,
+    survey, pkgdown
+VignetteBuilder: knitr
+Config/testthat/edition: 3
+Roxygen: list(markdown = TRUE)
+Config/roxygen2/version: 8.0.0

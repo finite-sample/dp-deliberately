@@ -1,0 +1,201 @@
+---
+title: "Input schema"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Input schema}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+library(deliberately)
+```
+
+An input is a named list of data frames with schema version `1.0`. Supply the
+tables needed by your analyses; do not fill absent tables with invented records.
+The `events` table anchors all IDs. CSV input uses one recognized table per file,
+for example `people.csv`, and the literal `NA` for missing values. ID columns
+are read as character to preserve leading zeroes.
+
+```{r}
+schema <- data_schema()
+knitr::kable(data.frame(
+  table = names(schema),
+  key = vapply(schema, function(s) paste(s$key, collapse = ", "), ""),
+  required_columns = vapply(schema, function(s) paste(s$fields, collapse = ", "), "")
+))
+```
+
+## Identity and measurement units
+
+All IDs are scoped to an event; use pseudonymous stable person IDs. IDs may repeat
+across events. Primary keys must be complete and unique. Foreign keys must match
+supplied parent records. Extra columns are preserved. Unknown tables are errors.
+People have roles `participant`, `moderator`, `expert`, or `observer`; participant
+attributes such as education, gender or income are additional columns on `people`.
+The package never derives those attributes from names or speech.
+
+An episode pairs one pre and one post survey wave. A session is one timed
+discussion, plenary or expert session. Multiple sessions can belong to an episode.
+`assignments` records one intended and actual group per participant per episode.
+If group assignments change between survey contrasts, use separate episodes.
+Session attendance remains the authority for transcript participation.
+
+`recruitment` has one row per person, with the last observed recruitment `stage`
+and logical `attended`. NA attendance is unknown, not absence. Recruitment stage
+counts describe the supplied last-stage classification, not a reconstructed
+recruitment funnel.
+
+## Time, attendance and recording completeness
+
+Session `start`/`end`, turn timestamps, coverage intervals, attendance `enter`/`exit`
+and material `available_at` use seconds from one declared event origin. Record
+that origin and timezone in `provenance`; concurrent sessions share a clock.
+End points must exceed start points. Missing paired endpoints are permitted for
+unknown session/attendance/turn times; coverage intervals must be known.
+
+Attendance supports multiple intervals per person and session, each with an
+`interval_id`. Status is `present`, `absent` or `unknown`. Repeated or overlapping
+present intervals are unioned. Speakers who are not participants do not enter
+participant airtime denominators. Present participants with no turns contribute
+zero turns. If a participant spoke but is missing from the present roster,
+correct the roster before interpreting participation.
+
+`coverage` contains recorded intervals, not gaps. The package unions overlapping
+intervals. Turn `sequence` is a positive integer, unique within session; it is
+required even without timestamps. Overlapping turn intervals are allowed across
+speakers. A missing speaker ID is permitted but flagged; it prevents complete
+participant shares and silence classification.
+
+Optional `turns.start` and `turns.end` unlock airtime; word shares are separate.
+Optional logical `argument_coding_complete` declares that a turn was exhaustively
+mapped to the supplied inventory, including an explicit finding of no match.
+It is not a recording-completeness declaration.
+
+## Survey items and scales
+
+Each response is one person × episode × item × wave. Missing responses may be
+explicit NA rows. Include those rows for every intended measurement when you want
+missing-response coverage to use the full intended denominator. Raw `value` is
+preserved; normalized values are derived during the audit. Out-of-scale values
+are errors, so recode survey missing-value sentinels before constructing a bundle
+and record the recode ledger in provenance.
+
+Items have `kind` equal to `attitude`, `knowledge` or `experience`, finite `lower`
+and `upper` endpoints, and `direction` of 1 or -1. Normalization is
+`(value - lower) / (upper - lower)`; direction -1 reverses the result.
+`midpoint` is the substantive neutral point in raw units. It may be NA; the package
+does not replace it with the arithmetic midpoint. P then remains unassessable.
+
+Knowledge items additionally specify `scoring`:
+
+* `binary_key`: supply numeric `correct_value` in original response units.
+* `proportion_correct`: declare an already-scored proportion, with endpoints 0/1
+  and direction 1. Wrong and missing answers remain distinct.
+
+With multiple knowledge items, `__knowledge_mean__` is the derived equally weighted
+person-level mean, requiring the complete item set at each wave. Optional logical
+`include_in_knowledge` chooses the set; omit it to include all knowledge items.
+Do not include both an aggregate score and its component items in the same index.
+The derived item ID is reserved. Aggregate source scores alone do not identify
+item-specific learning.
+
+Waves record explicit `phase` (`pre`, `post`, `other`) and a human-readable `timing`.
+At most one pre and post wave per episode is allowed. To analyze another post
+wave, construct another explicitly identified episode/contrast.
+
+## Benchmarks and design assumptions
+
+Each benchmark identifies a `variable`, `target`, `population`, and optional
+categorical `level`. With `level = NA`, `target` is a numeric mean and `sd` is its
+target-population SD. With a category level, `target` is a proportion. Different
+category levels require distinct benchmark IDs. Reference proportions are not
+silently renormalized. Marginal comparisons do not establish joint balance.
+
+Variables name people-table attributes or normalized baseline items using
+`item:episode_id:item_id`. Explicit `baseline_predictors` in `audit_config()` use
+the same names. The researcher must verify that attributes are measured before
+deliberation. Attendance prediction never selects predictors from outcomes.
+
+`sampling` contains the full probability-sample roster with positive `weight`,
+`psu` and `stratum`. For independent unstratified sampling, use each person's ID as
+PSU and one common stratum. Optional `fpc` follows `survey::svydesign` conventions.
+Set `probability_sample = TRUE` only when justified. The supported variance model
+is single-stage cluster/stratified sampling; absent FPC uses with-replacement PSU
+variance. Lonely PSUs produce non-estimability rather than a hidden adjustment.
+
+`randomization.mechanism` supports `complete_fixed_sizes` and
+`blocked_fixed_sizes`. Each implies uniformly random label allocations preserving
+observed group counts, globally or within supplied blocks. These are not inferred
+from balance. Other mechanisms remain descriptive. Tests require a complete
+paired assignment roster and matching intended/actual groups.
+
+## Arguments, source passages and annotation provenance
+
+`materials` identifies source passages by source ID, version and event-time
+availability. Arguments have topic, perspective, text, optional passage reference,
+and attributed review (`reviewed`, `reviewer`). Perspectives need not be binary.
+The denominator is the declared inventory for the session topic. That inventory
+is not automatically a complete or balanced set of strong arguments.
+
+`argument_edges` connects inventory IDs with researcher-supplied relations such
+as `supports`, `objects_to` or `responds_to`. Optional `node_type` on arguments
+distinguishes `argument` from `reason`, `evidence`, `objection` and `response`;
+coverage uses argument nodes. With no node_type, all rows are argument nodes.
+
+Annotations target `turn`, `passage` or `argument` IDs. Each contains `code`,
+`value`, `coder`, `source_type` (`human` or `model`), `codebook_version` and
+`review_status` (`unreviewed`, `accepted`, `rejected`, `adjudicated`). Model records
+also need `model` and `prompt_version`; optional `confidence` is preserved, not
+used as accuracy. Optional `start_char`/`end_char` are inclusive 1-based character
+offsets. Supply a full-turn target when the code applies to the complete utterance.
+
+Built-in turn codes:
+
+| Code | Values and denominator |
+|---|---|
+| `recommendation` | 0/1; identifies turns containing policy recommendations |
+| `reason_level` | 0 claim; 1 reason; 2 evidence/example; 3 response to another reason |
+| `evidence_present` | 0/1; direct evidence coding, including for responsive turns |
+| `counterargument` | 0/1; identifies counterarguments |
+| `response_observed` | 0/1 on a counterargument; explicit assessment of whether it received a substantive response |
+| `engages_previous` | 0/1 on a recommendation; explicit prior-argument engagement |
+| `personal_attack`, `dismissive`, `conformity_pressure` | 0/1 on coded turns |
+| `moderator_correction` | 0/1 on coded turns |
+| `interruption_given`, `interruption_received` | 0/1 on coded turns; incidence, not event counts |
+| `floor_attempt`, `floor_success` | 0/1; success probability conditions on a coded attempt |
+| `stance` | -1/0/1 according to a declared topic-specific orientation |
+
+Reason level 3 indicates responsiveness; it does not logically require evidence.
+The package reports evidence separately using explicit level 2 codes.
+These are package conventions requiring an event-specific codebook, not a
+validated implementation of a published DQI instrument. Additional codes are
+retained for extensions. Conflicting selected codes are omitted until a unique
+adjudicated value resolves them. Review and exact agreement are reported separately.
+
+Links have `from_turn`, `to_type` (`turn` or `argument`), `to_id`, `relation` and the
+same coding provenance. Coverage recognizes argument links `expresses`, `supports`
+and `rebuts`. Responsiveness recognizes turn links `substantive_response`,
+`acknowledges` and `rebuts`. Within a session the target must precede the response.
+An absent link is not automatically negative evidence. Cross-session links remain
+in the evidence graph; within-session response rates use within-session targets.
+
+For opposing-argument opportunity, attitude items additionally need `topic_id`,
+`perspective_positive` and `perspective_negative`, defined on the direction-adjusted
+scale. A participant at the neutral midpoint has no designated opposing direction.
+This diagnostic uses vetted arguments and timestamp overlap with attendance.
+
+## Working with incomplete data
+
+```{r}
+x <- example_deliberation()
+x$tables$turns <- NULL
+x$tables$annotations <- NULL
+x$tables$links <- NULL
+available_analyses(x)[, c("analysis", "readiness", "reason")]
+```
+
+Remove dependent annotation tables when removing source records. Invalid joins
+stop the audit; merely absent optional inputs do not. Validation findings have
+machine-readable codes and source row numbers. No missing input is a PASS.

@@ -1,0 +1,198 @@
+---
+output:
+  html_document:
+    self_contained: true
+    mathjax: null
+    theme: null
+    highlight: null
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE, warning = FALSE, message = FALSE,
+  fig.width = 9, fig.height = 4, dpi = 130
+)
+previous_chunk <- knitr::knit_hooks$get("chunk")
+knitr::knit_hooks$set(chunk = function(x, options) {
+  if (identical(options$results, "asis")) {
+    paste0("\n```{=html}\n", x, "\n```\n")
+  } else {
+    previous_chunk(x, options)
+  }
+})
+escape <- function(x) {
+  x <- gsub("&", "&amp;", x, fixed = TRUE)
+  x <- gsub("<", "&lt;", x, fixed = TRUE)
+  x <- gsub(">", "&gt;", x, fixed = TRUE)
+  x <- gsub('"', "&quot;", x, fixed = TRUE)
+  gsub("'", "&#39;", x, fixed = TRUE)
+}
+show_table <- function(d) {
+  if (!nrow(d)) {
+    cat("<p class='muted'>No eligible records.</p>\n")
+    return(invisible(NULL))
+  }
+  for (nm in names(d)) {
+    if (is.numeric(d[[nm]])) d[[nm]] <- ifelse(is.finite(d[[nm]]), format(round(d[[nm]], 4), trim = TRUE), "—")
+    else d[[nm]][is.na(d[[nm]])] <- "—"
+  }
+  cat("<div class='table-scroll'>", knitr::kable(d, format = "html", escape = TRUE, row.names = FALSE), "</div>\n")
+}
+m <- result$metrics
+cap <- result$capabilities
+```
+
+<style>
+:root { --ink:#192d35; --muted:#526870; --paper:#f6f5ef; --line:#d4dedb; --accent:#166b64; }
+body { max-width:1244px; margin:0 auto; padding:44px 32px 80px; box-sizing:border-box; background:var(--paper); color:var(--ink); font:16px/1.6 system-ui,-apple-system,sans-serif; }
+h1,h2,h3 { line-height:1.2; font-weight:650; letter-spacing:-.025em; }
+h1 { font-size:clamp(36px,5vw,64px); margin:12px 0 20px; max-width:950px; }
+h2 { font-size:28px; margin-top:48px; padding-top:22px; border-top:1px solid var(--line); }
+h3 { font-size:21px; margin-top:30px; }
+.eyebrow { text-transform:uppercase; letter-spacing:.16em; color:var(--accent); font-size:12px; font-weight:700; }
+.lead { max-width:780px; font-size:20px; color:var(--muted); }
+.cards { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin:30px 0; }
+.card { background:white; border:1px solid var(--line); border-top:4px solid var(--accent); border-radius:5px; padding:20px; }
+.card strong { display:block; font-size:32px; font-variant-numeric:tabular-nums; }
+.card span,.muted { color:var(--muted); }
+.notice { background:#e9efeb; border-left:4px solid var(--accent); padding:15px 20px; margin:24px 0; }
+details { background:white; border:1px solid var(--line); border-radius:5px; margin:14px 0; padding:14px 18px; }
+summary { cursor:pointer; font-weight:650; }
+table { border-collapse:collapse; width:100%; font-size:13px; background:white; }
+th { text-align:left; padding:10px; background:#e9efeb; white-space:nowrap; }
+td { text-align:left; padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+td,th { max-width:420px; overflow-wrap:anywhere; }
+.table-scroll { overflow:auto; max-height:650px; margin:15px 0; }
+a { color:var(--accent); } code { font-size:.9em; background:#e9efeb; padding:2px 4px; }
+img { max-width:100%; } input { padding:12px; width:min(500px,90%); border:1px solid var(--line); border-radius:4px; font:inherit; }
+@media(max-width:700px) { .cards { grid-template-columns:repeat(2,1fr); } body { padding:24px 16px; } }
+@media print { body { padding:0; } .table-scroll { max-height:none; overflow:visible; } details { break-inside:avoid; } input { display:none; } }
+</style>
+
+```{r title, results='asis'}
+cat("<div class='eyebrow'>deliberately · audit / ", escape(result$metadata$package_version), "</div>\n", sep = "")
+cat("<h1>", escape(report_title), "</h1>\n", sep = "")
+cat("<p class='lead'>What the data show about the design, participation, exchange,",
+    "and outcomes of deliberation—and what remains unmeasured.</p>\n")
+labels <- c("Events", "Computed diagnostics", "Unavailable analyses", "Policy rules evaluated")
+values <- c(
+  length(unique(cap$event_id)), sum(m$status == "computed"),
+  sum(cap$status == "unavailable"), nrow(result$policy_results)
+)
+cat("<div class='cards'>")
+for (i in seq_along(labels)) {
+  cat("<div class='card'><strong>", values[i], "</strong><span>", labels[i], "</span></div>", sep = "")
+}
+cat("</div>")
+if (isTRUE(result$metadata$provenance$synthetic)) {
+  cat("<div class='notice'><strong>Synthetic demonstration.</strong>",
+      "All people, statements, annotations, and measurements in this example are invented.</div>")
+}
+if (is.null(result$policy)) {
+  cat("<div class='notice'><strong>No verdict policy supplied.</strong>",
+      "Computed diagnostics do not imply PASS. Unavailable evidence does not imply absence of a problem.</div>")
+} else {
+  cat("<div class='notice'><strong>Researcher-defined policy: ", escape(result$policy$version),
+      "</strong><br>", escape(result$policy$rationale), "</div>", sep = "")
+}
+```
+
+## Evidence available
+
+Each analysis has its own input requirements. “Unassessable” means inputs exist but usable observations, definitions, or inferential assumptions are insufficient.
+
+```{r capabilities, results='asis'}
+show_table(cap[c("event_id", "layer", "analysis", "status", "reason")])
+```
+
+## Diagnostics
+
+Survey changes describe observed pre/post differences. They do not establish why views changed. Dialogue statistics describe observed speech; annotation-based results are conditional on supplied coding. D, P, and H are outcome descriptions, not quality verdicts.
+
+<input id="event-filter" type="search" aria-label="Filter events" placeholder="Filter event IDs…">
+
+```{r events, results='asis'}
+for (event in unique(cap$event_id)) {
+  cat("<details class='event-detail' data-event='", escape(event),
+      "'><summary>Event ", escape(event), "</summary>\n", sep = "")
+  z <- m[m$event_id == event & is.na(m$person_id), , drop = FALSE]
+  for (layer in c(
+    "sample", "attendance", "assignment", "materials", "participation", "exchange", "responsiveness",
+    "arguments", "exposure", "outcomes", "group_effects", "randomization", "survey_inference"
+  )) {
+    zz <- z[z$analysis == layer, , drop = FALSE]
+    if (!nrow(zz)) next
+    cat("<h3>", escape(gsub("_", " ", layer)), "</h3>\n", sep = "")
+    fields <- c(
+      "metric", "episode_id", "group_id", "session_id", "item_id", "contrast_id", "detail", "estimate",
+      "units", "n", "denominator", "coverage", "status", "lower", "upper", "p_value", "method", "reason"
+    )
+    fields <- fields[vapply(zz[fields], function(v) any(!is.na(v) & as.character(v) != ""), logical(1))]
+    show_table(zz[fields])
+  }
+  cat("</details>\n")
+}
+```
+
+```{r participation-plot}
+plot_data <- m[m$metric == "max_speaker_share" & m$status == "computed", , drop = FALSE]
+if (nrow(plot_data) > 0 && nrow(plot_data) <= 30) {
+  graphics::par(mar = c(4, 8, 2, 1), bg = "#f6f5ef", fg = "#192d35", col.axis = "#192d35")
+  graphics::barplot(
+    plot_data$estimate, names.arg = paste(plot_data$event_id, plot_data$session_id),
+    horiz = TRUE, las = 1, col = "#166b64", border = NA, xlim = c(0, 1),
+    xlab = "Largest participant share of observed participant speaker time",
+    main = "Speaking concentration by session"
+  )
+}
+```
+
+## Policy evaluations
+
+Rules are evaluated separately. NOT_TRIGGERED means the specified conditions were not met; it does not mean PASS. NOT_ASSESSED means required evidence was missing or insufficiently covered.
+
+```{r policy, results='asis'}
+show_table(result$policy_results)
+```
+
+## Definitions and provenance
+
+```{r provenance, results='asis'}
+for (ct in result$contrasts) {
+  cat("<p><strong>", escape(ct$id), "</strong>: ", escape(ct$rationale),
+      " Reference designated advantaged: ", ct$reference_advantaged, ".</p>\n", sep = "")
+}
+cat("<p>Input schema ", escape(result$metadata$schema_version), "; generated ",
+    escape(result$metadata$created_at), ".</p>", sep = "")
+show_table(data.frame(table = names(result$metadata$input_hashes), sha256 = unname(result$metadata$input_hashes)))
+cat("<details><summary>Analysis configuration</summary>")
+show_table(data.frame(
+  setting = names(result$metadata$config),
+  value = vapply(result$metadata$config, function(z) paste(z, collapse = ", "), "")
+))
+cat("</details>")
+if (!is.null(result$metadata$provenance$ledger)) show_table(result$metadata$provenance$ledger)
+show_table(result$validation)
+if (include_evidence) {
+  cat("<h3>Source evidence</h3><p>Includes supplied participant identifiers and source excerpts.</p>")
+  for (nm in names(result$evidence)) {
+    d <- result$evidence[[nm]]
+    if (is.null(d)) next
+    cat("<details><summary>", escape(nm), "</summary>", sep = "")
+    show_table(d)
+    cat("</details>")
+  }
+} else {
+  cat("<p class='muted'>Source excerpts and person-level records are omitted from this report.",
+      "The R result retains the evidence and complete diagnostics.</p>")
+}
+```
+
+<script>
+document.getElementById('event-filter').addEventListener('input', function () {
+  const query = this.value.toLowerCase();
+  document.querySelectorAll('.event-detail').forEach(function (node) {
+    node.hidden = !node.dataset.event.toLowerCase().includes(query);
+  });
+});
+</script>
