@@ -59,9 +59,14 @@ cluster_interval <- function(d, confidence) {
     test = "Satterthwaite",
     coefs = term
   )
-  if (!is.finite(test$df_Satt) || test$df_Satt < 1 || !is.finite(test$SE)) {
+  if (
+    !is.finite(test$df_Satt) ||
+      test$df_Satt < 1 - sqrt(.Machine$double.eps) ||
+      !is.finite(test$SE)
+  ) {
     cli::cli_abort("Insufficient effective degrees of freedom.")
   }
+  test$df_Satt <- max(1, test$df_Satt)
   if (test$SE <= .Machine$double.eps * max(abs(d$change))) {
     cli::cli_abort(
       "Cluster-robust variance is numerically zero; uncertainty is unassessable."

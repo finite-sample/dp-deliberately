@@ -121,3 +121,21 @@ Win-builder submission was blocked by automatic approval review because it
 uploads the source to a separate external service and triggers maintainer email.
 Explicit user approval has been requested. No win-builder check is claimed.
 GitHub publication and hosted checks proceed under the existing authorization.
+
+## Windows platform boundary
+
+The first hosted Windows release and R-devel runs reproduced two failures in the
+two-cluster regression fixtures. Satterthwaite df at its theoretical lower bound
+could round below one, causing a valid model to be rejected and masking the
+numerical-zero variance reason. Other completed platform checks and the hosted
+source-reference/bootstrap validation passed.
+
+The df guard now tolerates values within sqrt(machine epsilon) below one and
+rounds them to one before computing intervals. It still rejects nonfinite or
+materially sub-one df. Independent methodological review accepted this narrow
+boundary treatment. Local full tests remain 168/0/0/0 and the built-package check
+passes 0/0/0. Windows hosted verification is the decisive regression check.
+
+The publisher's Fishkin DOI landing page blocked the hosted link checker with
+403. README now links to the author's Stanford publication record, verified to
+return 200. The deployed package's standard URL check passes all 10 URLs.

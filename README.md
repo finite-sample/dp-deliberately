@@ -190,7 +190,7 @@ inputs, policies, inference, importer behavior and report rendering. pkgdown use
 this README for its home page and generated package help for its reference.
 
 The software implements observational diagnostics informed by
-[Fishkin's design criteria](https://doi.org/10.1002/hast.1316) and the signed
+[Fishkin's design criteria](https://deliberation.stanford.edu/publications/journal-articles/deliberative-public-consultation-deliberative-polling-criteria-and) and the signed
 movement measures in
 [Luskin et al., *Deliberative Distortions?*](https://doi.org/10.1017/S0007123421000168).
 Its annotation categories are explicitly documented operational conventions,
