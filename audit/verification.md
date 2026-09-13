@@ -101,3 +101,23 @@ local suite now has 168 passing assertions with zero failures, warnings or skips
 and the built-package check has zero errors, warnings and notes. The final
 independent verification follows this narrow repair; historical review reports
 are retained with their original findings rather than rewritten as clean reviews.
+
+## Final independent disposition
+
+The different-model reviewer verified `2fdeb2906f869a91931c5f167be5bc19b0a29440`
+in a fresh isolated archive. All 29 cluster assertions and package lint passed.
+The numerical-zero case now has no inferential fields; the nonzero control
+retains SE 7.6376e-05. No unresolved material finding remains in the audited
+scope. See `final-review.md`.
+
+Final native as-CRAN/manual and isolated Linux Docker checks pass 0/0/0. Local
+source artifact SHA-256:
+`3aee0a50f5b83b9c79c666be2253a711afd412a079044eaaa7f3c2a61ba7c6dd`.
+The inspected tarball contains 82 entries, 94,709 bytes, and no real source data,
+reports, audit records or workspace artifacts. Audit-record-only commits do not
+change its package payload.
+
+Win-builder submission was blocked by automatic approval review because it
+uploads the source to a separate external service and triggers maintainer email.
+Explicit user approval has been requested. No win-builder check is claimed.
+GitHub publication and hosted checks proceed under the existing authorization.
