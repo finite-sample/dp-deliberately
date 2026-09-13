@@ -27,3 +27,11 @@ The normalized output path, invisibly. Requires rmarkdown and Pandoc.
 \description{
 Render a standalone HTML audit report
 }
+\examples{
+if (requireNamespace("rmarkdown", quietly = TRUE) && rmarkdown::pandoc_available()) {
+  result <- audit_dp(example_deliberation(), config = audit_config(permutations = 9))
+  file <- tempfile(fileext = ".html")
+  render_audit(result, file)
+  unlink(file)
+}
+}

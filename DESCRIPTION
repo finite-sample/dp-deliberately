@@ -11,10 +11,15 @@ Description: Validate deliberative polling data and produce modular diagnostics
     (2022) <doi:10.1017/S0007123421000168>.
 License: MIT + file LICENSE
 Encoding: UTF-8
+Language: en-US
+URL: https://finite-sample.github.io/deliberately/, https://github.com/finite-sample/deliberately
+BugReports: https://github.com/finite-sample/deliberately/issues
 Depends: R (>= 4.1.0)
-Imports: digest
+Imports: assertr, cli, digest, dplyr (>= 1.1.1), readr, rlang, tibble, withr,
+    randomizr
 Suggests: testthat (>= 3.0.0), roxygen2, lintr, rmarkdown, knitr, pkgload,
-    survey, pkgdown
+    survey, clubSandwich, pkgdown, ggplot2, gt, DT, bslib, htmltools,
+    covr, spelling, yaml, rprojroot, rcmdcheck
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE)

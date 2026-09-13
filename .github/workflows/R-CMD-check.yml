@@ -1,0 +1,13 @@
+name: R-CMD-check
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  check:
+    uses: gojiplus/r-canon/.github/workflows/reusable-check.yml@v2
+    with:
+      not-cran: true

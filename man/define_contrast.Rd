@@ -36,3 +36,7 @@ A contrast definition; \code{\link[=audit_dp]{audit_dp()}} stores evaluated memb
 \description{
 Define an event-specific group contrast
 }
+\examples{
+define_contrast("education", function(p) p$education == "lower",
+  function(p) p$education == "higher", rationale = "Study-specific education contrast")
+}

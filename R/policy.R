@@ -10,6 +10,11 @@
 #' @return A policy object. Rules do not create a composite score. A rule whose
 #'   conditions fail returns NOT_TRIGGERED; missing or incomplete evidence
 #'   returns NOT_ASSESSED. These are separate from explicit PASS verdicts.
+#' @examples
+#' audit_policy("example-1", data.frame(
+#'   rule_id = "concentration", scope = "session", metric = "max_speaker_share",
+#'   operator = ">", threshold = .6, verdict = "WARNING", min_coverage = 1,
+#'   aggregation = "any"), rationale = "Illustrative rule, not a validated threshold")
 #' @export
 audit_policy <- function(version, rules, rationale) {
   required <- c(
@@ -107,7 +112,7 @@ evaluate_policy <- function(metrics, policy, x = NULL) {
         a$actual_group[1]
       )
     }
-    metrics <- bind_rows(c(list(metrics), units))
+    metrics <- dplyr::bind_rows(c(list(metrics), units))
   }
   rows <- list()
   for (rule in split_rows(policy$rules, "rule_id")) {
@@ -203,5 +208,5 @@ evaluate_policy <- function(metrics, policy, x = NULL) {
   if (!length(rows)) {
     return(empty)
   }
-  bind_rows(rows)
+  dplyr::bind_rows(rows)
 }

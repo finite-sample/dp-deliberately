@@ -26,3 +26,9 @@ returns NOT_ASSESSED. These are separate from explicit PASS verdicts.
 \description{
 Define explicit rules for audit verdicts
 }
+\examples{
+audit_policy("example-1", data.frame(
+  rule_id = "concentration", scope = "session", metric = "max_speaker_share",
+  operator = ">", threshold = .6, verdict = "WARNING", min_coverage = 1,
+  aggregation = "any"), rationale = "Illustrative rule, not a validated threshold")
+}

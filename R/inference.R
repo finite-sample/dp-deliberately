@@ -76,8 +76,10 @@ group_metrics <- function(x, contrasts, config) {
           "moderator_separate_effect",
           NA_real_,
           if (crossed) {
-            paste("Multiple moderators per group require a session-level outcome design;",
-                  "episode outcomes cannot separate exposure.")
+            paste(
+              "Multiple moderators per group require a session-level outcome design;",
+              "episode outcomes cannot separate exposure."
+            )
           } else {
             "Moderator indicators are confounded with episode group indicators."
           }
@@ -127,7 +129,10 @@ group_metrics <- function(x, contrasts, config) {
       add(
         "assignment_randomization_statistic",
         NA_real_,
-        "Requires supported fixed-size randomization, full paired roster and no assignment deviations.",
+        paste(
+          "Requires supported fixed-size randomization, full paired roster",
+          "and no assignment deviations."
+        ),
         analysis = "randomization"
       )
       next
@@ -146,13 +151,28 @@ group_metrics <- function(x, contrasts, config) {
       )
       next
     }
+    conditions <- sort(unique(zz$group_id))
+    declaration <- if (rr$mechanism == "complete_fixed_sizes") {
+      randomizr::declare_ra(
+        N = nrow(zz),
+        m_each = as.integer(table(factor(zz$group_id, levels = conditions))),
+        conditions = conditions
+      )
+    } else {
+      randomizr::declare_ra(
+        N = nrow(zz),
+        blocks = block,
+        block_m_each = unclass(table(
+          block,
+          factor(zz$group_id, levels = conditions)
+        )),
+        conditions = conditions
+      )
+    }
     draws <- with_seed(
       config$seed,
       replicate(config$permutations, {
-        labels <- zz$group_id
-        for (idx in split(seq_along(labels), block)) {
-          labels[idx] <- labels[idx][sample.int(length(idx))]
-        }
+        labels <- randomizr::conduct_ra(declaration)
         group_statistic(zz$pre, zz$post, labels)
       })
     )
@@ -170,7 +190,7 @@ group_metrics <- function(x, contrasts, config) {
       )
     )
   }
-  bind_rows(collector$rows)
+  dplyr::bind_rows(collector$rows)
 }
 
 survey_metrics <- function(x, contrasts, config) {
@@ -205,7 +225,10 @@ survey_metrics <- function(x, contrasts, config) {
       } else if (!requireNamespace("survey", quietly = TRUE)) {
         reason <- "Install the survey package for design-based inference."
       } else if (anyNA(ss[c("psu", "stratum")])) {
-        reason <- "Sampling requires explicit PSU and stratum IDs (one stratum for unstratified samples)."
+        reason <- paste(
+          "Sampling requires explicit PSU and stratum IDs (one stratum for",
+          "unstratified samples)."
+        )
       } else if (!all(z$person_id %in% ss$person_id)) {
         reason <- "Response records missing from the sampling roster."
       } else if (sum(keep) < 2L) {
@@ -236,11 +259,14 @@ survey_metrics <- function(x, contrasts, config) {
         lower = result["lower"],
         upper = result["upper"],
         reason = reason,
-        method = "Taylor survey variance; design-df t interval; paired-response domain; supplied weights"
+        method = paste(
+          "Taylor survey variance; design-df t interval; paired-response",
+          "domain; supplied weights"
+        )
       )
     }
   }
-  bind_rows(rows)
+  dplyr::bind_rows(rows)
 }
 
 

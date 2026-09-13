@@ -18,3 +18,6 @@ Readiness describes inputs, not whether every metric is estimable.
 \description{
 Determine which analyses the supplied tables unlock
 }
+\examples{
+available_analyses(example_deliberation())
+}

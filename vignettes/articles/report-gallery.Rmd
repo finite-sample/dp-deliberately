@@ -1,0 +1,72 @@
+---
+title: "Read the audit reports"
+output: rmarkdown::html_document
+---
+
+```{r build-reports, include=FALSE}
+root <- rprojroot::find_package_root_file()
+source_dir <- tempfile("distortions-")
+dir.create(file.path(source_dir, "data"), recursive = TRUE)
+manifest <- read.csv(file.path(root, "inst", "examples", "distortions-source.csv"))
+for (i in seq_len(nrow(manifest))) {
+  file <- file.path(source_dir, "data", manifest$file[i])
+  download.file(manifest$url[i], file, mode = "wb", quiet = TRUE)
+  stopifnot(identical(digest::digest(file = file, algo = "sha256"), manifest$sha256[i]))
+}
+withr::with_envvar(c(DELIBERATELY_SOURCE = source_dir), {
+  withr::with_dir(root, source("inst/examples/gallery.R"))
+})
+destination <- file.path(root, "docs", "reports")
+dir.create(destination, recursive = TRUE, showWarnings = FALSE)
+reports <- list.files(
+  file.path(root, "artifacts", "gallery"), pattern = "\\.html$", full.names = TRUE
+)
+stopifnot(file.copy(reports, destination, overwrite = TRUE))
+unlink(source_dir, recursive = TRUE)
+```
+
+The reports below are complete rendered audits. Open a report to explore the
+figures, filter diagnostics, inspect denominators and export table rows.
+
+| Report | What to look for |
+|---|---|
+| [Balanced synthetic discussion](../reports/balanced.html) | Distributed participation and complete recording, under an illustrative policy |
+| [Concentrated synthetic discussion](../reports/concentrated.html) | One participant takes the recorded participant turns, while opinions move and knowledge does not improve |
+| [Incomplete synthetic recording](../reports/incomplete.html) | Missing recording coverage prevents a complete-session silence verdict |
+| [Real data: distortions, paired respondents](../reports/distortions.html) | Item-specific learning, opinion change, response coverage and H/P/D across polls |
+| [Real data: available-wave sensitivity](../reports/distortions-available.html) | How results differ when each wave uses all observed respondents |
+
+Synthetic statements, participants and annotations are invented. The policy
+thresholds demonstrate software behavior; they are not a validated standard for
+judging deliberation. The real data supply surveys and group labels, so the
+report leaves transcript and briefing diagnostics unavailable.
+
+## Reproduce the reports
+
+From the development repository, with deliberately installed:
+
+```sh
+Rscript inst/examples/gallery.R ../distortions
+```
+
+This writes standalone HTML reports and audit R objects to `artifacts/gallery`.
+The real-data import reads `data/polardata.csv` and `data/poll_indices.csv` from
+the separately maintained [distortions repository](https://github.com/soodoku/distortions).
+Source files are hashed; exact duplicate removal and endpoint rounding are logged.
+No participant data are bundled with this package.
+
+The documentation website serves only aggregate HTML reports. The saved R objects
+retain evidence and identifiers and belong in the research workspace.
+
+## Read a report in order
+
+Start with the findings and plots, then check response and recording coverage.
+Use the diagnostic explorer to inspect an event, item, subgroup or method. Read
+its denominator and assumptions before interpreting the estimate. Policy verdicts
+follow the declared rules; missing inputs never create a PASS.
+
+A large opinion change can coexist with poor process evidence, and almost no
+opinion change can coexist with thoughtful discussion. Read participation,
+argument consideration and learning together rather than treating movement as a
+success criterion. The [design review](design-review.html) explains the limits of
+each claim and the evidence needed to support stronger conclusions.

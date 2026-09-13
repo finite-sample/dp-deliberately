@@ -25,3 +25,6 @@ approximation, not achieved power inferred from an observed effect.
 \description{
 Detectable paired change under a declared planning model
 }
+\examples{
+detectable_change(n = 100, sd_change = .2)
+}

@@ -2,6 +2,8 @@
 #' @param x A [deliberation_data()] bundle.
 #' @return A data frame of severity, table, row, code, and message. An empty
 #'   result means no detected problems, not evidence of substantive validity.
+#' @examples
+#' validate_data(example_deliberation())
 #' @export
 validate_data <- function(x) {
   if (!inherits(x, "deliberation_data")) {
@@ -52,7 +54,7 @@ validate_data <- function(x) {
       nm,
       "MISSING_KEY",
       "Primary keys cannot be missing or empty.",
-      which(bad)
+      assertion_rows(!bad)
     )
     add(
       nm,
@@ -92,7 +94,7 @@ validate_data <- function(x) {
       child,
       "ORPHAN_REFERENCE",
       paste("Unmatched", parent, "reference."),
-      which(bad)
+      assertion_rows(!bad)
     )
   }
   for (nm in setdiff(valid, "events")) {
@@ -137,6 +139,10 @@ validate_data <- function(x) {
       return(invisible(NULL))
     }
     z <- x$tables[[nm]][[col]]
+    if (is.logical(allowed) && !is.logical(z)) {
+      add(nm, "TYPE", paste(col, "must be logical."))
+      return(invisible(NULL))
+    }
     bad <- !z %in% allowed
     if (nullable) {
       bad <- bad & !is.na(z)
@@ -145,7 +151,7 @@ validate_data <- function(x) {
       nm,
       "INVALID_VALUE",
       paste(col, "must be one of", paste(allowed, collapse = ", ")),
-      which(bad)
+      assertion_rows(!bad)
     )
   }
   choices("people", "role", c("participant", "moderator", "expert", "observer"))
@@ -348,9 +354,9 @@ validate_data <- function(x) {
       "warning"
     )
   }
-  out <- bind_rows(collector$issues)
+  out <- dplyr::bind_rows(collector$issues)
   if (!nrow(out) || !any(out$severity == "error")) {
-    out <- bind_rows(list(out, validate_semantics(x)))
+    out <- dplyr::bind_rows(list(out, validate_semantics(x)))
   }
   if (!nrow(out)) {
     out <- data.frame(
@@ -362,4 +368,17 @@ validate_data <- function(x) {
     )
   }
   out
+}
+
+assertion_rows <- function(valid) {
+  checked <- withr::with_preserve_seed(assertr::verify(
+    data.frame(valid = valid),
+    valid,
+    error_fun = assertr::error_append
+  ))
+  errors <- attr(checked, "assertr_errors")
+  unique(unlist(
+    lapply(errors, function(e) e$error_df$index),
+    use.names = FALSE
+  ))
 }

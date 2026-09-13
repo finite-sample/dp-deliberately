@@ -20,7 +20,7 @@ build:
 	R CMD build .
 
 check: build
-	R CMD check --no-manual $(PACKAGE)_$(VERSION).tar.gz
+	Rscript -e 'rcmdcheck::rcmdcheck("$(PACKAGE)_$(VERSION).tar.gz", args="--no-manual", error_on="warning")'
 
 ci: lint test check
 

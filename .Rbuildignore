@@ -7,3 +7,7 @@
 ^\.lintr$
 ^_pkgdown\.yml$
 ^IMPLEMENTATION\.md$
+^cran-comments\.md$
+^audit$
+^revdep$
+^vignettes/articles$

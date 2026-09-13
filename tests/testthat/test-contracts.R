@@ -100,13 +100,20 @@ test_that("empty sessions and non-comparison waves remain assessable as inputs",
   x$tables$turns <- x$tables$turns[x$tables$turns$session_id != "s1", ]
   m <- participation_metrics(x, list(), quick_config())
   expect_equal(estimate_of(m, "silent_fraction"), 1)
-  x$tables$attendance <- x$tables$attendance[x$tables$attendance$session_id != "s1", ]
+  x$tables$attendance <- x$tables$attendance[
+    x$tables$attendance$session_id != "s1",
+  ]
   m <- participation_metrics(x, list(), quick_config())
   expect_true(is.na(estimate_of(m, "silent_fraction")))
   x <- survey_fixture()
   x$tables$waves$phase <- "other"
   expect_equal(nrow(paired_responses(x)), 0L)
-  expect_equal(audit_dp(x)$capabilities$status[audit_dp(x)$capabilities$analysis == "outcomes"], "unassessable")
+  expect_equal(
+    audit_dp(x)$capabilities$status[
+      audit_dp(x)$capabilities$analysis == "outcomes"
+    ],
+    "unassessable"
+  )
 })
 
 test_that("survey inference restores the caller's variance options", {
@@ -114,6 +121,10 @@ test_that("survey inference restores the caller's variance options", {
   old <- options(survey.lonely.psu = "adjust")
   on.exit(options(old))
   x <- example_deliberation()
-  survey_metrics(x, resolve_contrasts(x, list(education_contrast())), audit_config(probability_sample = TRUE))
+  survey_metrics(
+    x,
+    resolve_contrasts(x, list(education_contrast())),
+    audit_config(probability_sample = TRUE)
+  )
   expect_identical(getOption("survey.lonely.psu"), "adjust")
 })

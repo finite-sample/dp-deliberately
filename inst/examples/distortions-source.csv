@@ -1,0 +1,3 @@
+file,url,sha256
+polardata.csv,https://raw.githubusercontent.com/soodoku/distortions/ffd7aafb017c039726d95d61e90f13ca4521e317/data/polardata.csv,414900c78fd505180b3b90538df3df5958be8043947714fcdbb510924a60134f
+poll_indices.csv,https://raw.githubusercontent.com/soodoku/distortions/ffd7aafb017c039726d95d61e90f13ca4521e317/data/poll_indices.csv,f3aa3b17e072a70404c562dd7113bebda7a1f5afd5f4abe96944d5956fd3d055

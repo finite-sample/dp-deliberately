@@ -1,8 +1,15 @@
 #' A synthetic deliberative event with all audit inputs
+#' @param scenario Balanced discussion, concentrated participation, or incomplete recording.
 #' @return A [deliberation_data()] bundle. All people, statements, measurements
 #'   and annotations are invented for software testing, not empirical evidence.
+#' @examples
+#' x <- example_deliberation("concentrated")
+#' validate_data(x)
 #' @export
-example_deliberation <- function() {
+example_deliberation <- function(
+  scenario = c("balanced", "concentrated", "incomplete")
+) {
+  scenario <- match.arg(scenario)
   ids <- sprintf("p%02d", 1:20)
   people <- data.frame(
     event_id = "demo",
@@ -71,7 +78,7 @@ example_deliberation <- function() {
       argument_coding_complete = TRUE
     )
   }
-  turns <- bind_rows(turns)
+  turns <- dplyr::bind_rows(turns)
   items <- data.frame(
     event_id = "demo",
     item_id = c("support", "knowledge"),
@@ -174,7 +181,7 @@ example_deliberation <- function() {
       review_status = "accepted"
     )
   }
-  deliberation_data(
+  x <- deliberation_data(
     events = data.frame(
       event_id = "demo",
       label = "Synthetic transport deliberation"
@@ -270,11 +277,40 @@ example_deliberation <- function() {
       to_argument = "cost",
       relation = "responds_to"
     ),
-    annotations = bind_rows(annotations),
-    links = bind_rows(links),
+    annotations = dplyr::bind_rows(annotations),
+    links = dplyr::bind_rows(links),
     provenance = list(
       synthetic = TRUE,
       notice = "Invented data for software demonstration; not empirical evidence."
     )
   )
+  x$provenance$scenario <- scenario
+  if (scenario == "concentrated") {
+    t <- x$tables$turns
+    for (session in unique(t$session_id)) {
+      keep <- t$session_id == session & t$sequence <= 4
+      t$person_id[keep] <- t$person_id[which(keep)[1]]
+    }
+    x$tables$turns <- t
+    r <- x$tables$responses
+    post <- r$wave_id == "after"
+    before <- r[r$wave_id == "baseline", ]
+    idx <- match(
+      row_key(r, c("person_id", "item_id")),
+      row_key(before, c("person_id", "item_id"))
+    )
+    r$value[post & r$item_id == "knowledge"] <- before$value[idx[
+      post & r$item_id == "knowledge"
+    ]]
+    r$value[post & r$item_id == "support"] <- pmin(
+      1,
+      before$value[idx[post & r$item_id == "support"]] + .24
+    )
+    x$tables$responses <- r
+  }
+  if (scenario == "incomplete") {
+    x$tables$coverage$end <- 60
+    x$tables$turns$argument_coding_complete <- FALSE
+  }
+  x
 }

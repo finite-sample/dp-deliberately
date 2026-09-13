@@ -4,7 +4,10 @@
 \alias{example_deliberation}
 \title{A synthetic deliberative event with all audit inputs}
 \usage{
-example_deliberation()
+example_deliberation(scenario = c("balanced", "concentrated", "incomplete"))
+}
+\arguments{
+\item{scenario}{Balanced discussion, concentrated participation, or incomplete recording.}
 }
 \value{
 A \code{\link[=deliberation_data]{deliberation_data()}} bundle. All people, statements, measurements
@@ -12,4 +15,8 @@ and annotations are invented for software testing, not empirical evidence.
 }
 \description{
 A synthetic deliberative event with all audit inputs
+}
+\examples{
+x <- example_deliberation("concentrated")
+validate_data(x)
 }

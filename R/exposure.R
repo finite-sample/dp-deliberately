@@ -8,7 +8,9 @@ exposure_metrics <- function(x, contrasts, config) {
   rows <- list()
   for (i in seq_len(nrow(sessions))) {
     s <- sessions[i, ]
-    if (is.na(s$topic_id)) next
+    if (is.na(s$topic_id)) {
+      next
+    }
     aa <- a[
       a$event_id == s$event_id &
         a$session_id == s$session_id &
@@ -36,7 +38,8 @@ exposure_metrics <- function(x, contrasts, config) {
       d[
         d$event_id == s$event_id &
           d$episode_id == s$episode_id &
-          d$kind == "attitude" & !is.na(d$topic_id) &
+          d$kind == "attitude" &
+          !is.na(d$topic_id) &
           d$topic_id == s$topic_id,
         ,
         drop = FALSE
@@ -114,5 +117,5 @@ exposure_metrics <- function(x, contrasts, config) {
       )
     }
   }
-  bind_rows(rows)
+  dplyr::bind_rows(rows)
 }

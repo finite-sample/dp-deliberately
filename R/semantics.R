@@ -110,8 +110,11 @@ validate_semantics <- function(x) {
         )
         next
       }
-      outside <- start < 1 | start != floor(start) | end != floor(end) |
-        end < start | end > nchar(source$text[idx])
+      outside <- start < 1 |
+        start != floor(start) |
+        end != floor(end) |
+        end < start |
+        end > nchar(source$text[idx])
       bad <- xor(is.na(start), is.na(end)) | (!is.na(start) & outside)
       add(
         "annotations",
@@ -177,5 +180,5 @@ validate_semantics <- function(x) {
       )
     }
   }
-  bind_rows(collector$issues)
+  dplyr::bind_rows(collector$issues)
 }

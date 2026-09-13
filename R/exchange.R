@@ -28,7 +28,7 @@ resolved_codes <- function(x, config) {
       z[1, , drop = FALSE]
     }
   )
-  bind_rows(rows)
+  dplyr::bind_rows(rows)
 }
 
 code_values <- function(a, ids, code) {
@@ -249,14 +249,14 @@ exchange_metrics <- function(x, contrasts, config) {
       add(
         "interruption_received_ratio",
         if (is.finite(ref) && ref > 0) safe_mean(v[f]) / ref else NA_real_,
-        sum(is.finite(v[f])),
-        sum(is.finite(v[r])),
-        "Per coded turn focal/reference ratio",
+        sum(is.finite(v[f | r])),
+        sum(f | r),
+        "Per coded turn focal/reference ratio; coverage among eligible contrast turns",
         ct$id
       )
     }
   }
-  bind_rows(collector$rows)
+  dplyr::bind_rows(collector$rows)
 }
 
 argument_metrics <- function(x, contrasts, config) {
@@ -269,7 +269,8 @@ argument_metrics <- function(x, contrasts, config) {
   for (i in seq_len(nrow(sessions))) {
     s <- sessions[i, ]
     args <- arguments[
-      arguments$event_id == s$event_id & !is.na(arguments$topic_id) &
+      arguments$event_id == s$event_id &
+        !is.na(arguments$topic_id) &
         arguments$topic_id %in% s$topic_id,
       ,
       drop = FALSE
@@ -399,5 +400,5 @@ argument_metrics <- function(x, contrasts, config) {
       }
     }
   }
-  bind_rows(collector$rows)
+  dplyr::bind_rows(collector$rows)
 }

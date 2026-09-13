@@ -14,3 +14,6 @@ requirements; additional checks are made on each event's usable data.
 \description{
 Discover analysis requirements
 }
+\examples{
+analysis_requirements()[c("analysis", "tables", "assumptions")]
+}

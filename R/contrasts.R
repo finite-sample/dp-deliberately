@@ -9,6 +9,9 @@
 #' @param reference_advantaged Whether the reference is explicitly designated
 #'   advantaged for the D measure. Default FALSE.
 #' @return A contrast definition; [audit_dp()] stores evaluated memberships.
+#' @examples
+#' define_contrast("education", function(p) p$education == "lower",
+#'   function(p) p$education == "higher", rationale = "Study-specific education contrast")
 #' @export
 define_contrast <- function(
   id,

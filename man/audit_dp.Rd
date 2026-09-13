@@ -22,3 +22,7 @@ policy_results, evaluated contrasts, evidence, and reproducibility metadata.
 \description{
 Run all supported audit modules
 }
+\examples{
+result <- audit_dp(example_deliberation(), config = audit_config(permutations = 9))
+head(result$metrics)
+}

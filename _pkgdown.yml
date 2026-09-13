@@ -1,2 +1,15 @@
+url: https://finite-sample.github.io/deliberately/
 template:
   bootstrap: 5
+articles:
+- title: Start here
+  navbar: ~
+  contents:
+  - input-schema
+  - articles/report-gallery
+  - design-review
+  - methods
+
+destination: docs
+development:
+  mode: unreleased

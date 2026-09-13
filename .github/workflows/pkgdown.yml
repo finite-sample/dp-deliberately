@@ -1,0 +1,22 @@
+name: pkgdown
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  pkgdown:
+    # A called workflow cannot grant itself more than the caller has, so every
+    # scope the site build and deploy use has to be granted here. Naming any
+    # scope drops the rest to none, so contents has to be restated even though
+    # it is the default -- omit it and the checkout fails.
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: gojiplus/r-canon/.github/workflows/reusable-pkgdown.yml@v2

@@ -12,7 +12,9 @@ audit_config(
   probability_sample = FALSE,
   confidence = 0.95,
   seed = 104729L,
-  permutations = 999L
+  permutations = 999L,
+  cluster = NULL,
+  test_families = NULL
 )
 }
 \arguments{
@@ -34,10 +36,18 @@ adjudicated; rejected annotations cannot be included.}
 \item{seed}{Reproducible seed, without changing the caller's random state.}
 
 \item{permutations}{Monte Carlo draws for supported assignment tests.}
+
+\item{cluster}{Optional specification from \code{\link[=cluster_inference]{cluster_inference()}}.}
+
+\item{test_families}{Named list of metric-name vectors. Each family includes
+every matching metric row across events; Holm adjustment retains raw p-values.}
 }
 \value{
 A configuration list recorded in \code{\link[=audit_dp]{audit_dp()}} output.
 }
 \description{
 Configure a reproducible audit
+}
+\examples{
+audit_config(permutations = 99, membership = "paired")
 }

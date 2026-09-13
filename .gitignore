@@ -7,3 +7,5 @@
 docs/
 artifacts/
 *.Rproj.user/
+revdep/
+.r-canon/

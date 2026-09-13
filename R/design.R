@@ -281,7 +281,7 @@ design_metrics <- function(x, contrasts, config) {
       )
     }
   }
-  bind_rows(rows)
+  dplyr::bind_rows(rows)
 }
 
 #' Detectable paired change under a declared planning model
@@ -293,6 +293,8 @@ design_metrics <- function(x, contrasts, config) {
 #' @return Normal-approximation standard error, interval half width and minimum
 #'   detectable change, in the same units as sd_change. This is a planning
 #'   approximation, not achieved power inferred from an observed effect.
+#' @examples
+#' detectable_change(n = 100, sd_change = .2)
 #' @export
 detectable_change <- function(
   n,

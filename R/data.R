@@ -3,6 +3,8 @@
 #' Required columns and primary keys for supplied tables. Optional columns and
 #' analysis-specific requirements are described in the schema vignette.
 #' @return A named list of table specifications.
+#' @examples
+#' data_schema()$turns
 #' @export
 data_schema <- function() {
   spec <- function(key, fields) {
@@ -129,6 +131,8 @@ data_schema <- function() {
 #' @param schema_version Input schema version; currently `"1.0"`.
 #' @param provenance Additional source and transformation metadata.
 #' @return A `deliberation_data` object. Use [validate_data()] before analysis.
+#' @examples
+#' deliberation_data(events = data.frame(event_id = "event1", label = "Example"))
 #' @export
 deliberation_data <- function(
   ...,
@@ -164,6 +168,13 @@ deliberation_data <- function(
 #' Read named CSV input tables
 #' @param path Directory containing CSV files named for [data_schema()] tables.
 #' @return A `deliberation_data` object with file hashes.
+#' @examples
+#' path <- tempfile()
+#' dir.create(path)
+#' write.csv(data.frame(event_id = "001", label = "Example"),
+#'   file.path(path, "events.csv"), row.names = FALSE)
+#' x <- read_deliberation(path)
+#' unlink(path, recursive = TRUE)
 #' @export
 read_deliberation <- function(path) {
   files <- file.path(path, paste0(names(data_schema()), ".csv"))
@@ -172,19 +183,31 @@ read_deliberation <- function(path) {
     stop("No recognized CSV tables found.")
   }
   tables <- lapply(files, function(file) {
-    header <- names(utils::read.csv(file, nrows = 0, check.names = FALSE))
-    classes <- rep(NA_character_, length(header))
-    classes[grepl(
+    header <- names(readr::read_csv(
+      file,
+      n_max = 0,
+      show_col_types = FALSE,
+      name_repair = "minimal"
+    ))
+    ids <- header[grepl(
       "(_id$|^intended_group$|^actual_group$|^block$|^psu$|^stratum$)",
       header
-    )] <- "character"
-    utils::read.csv(
+    )]
+    spec <- readr::cols(.default = readr::col_guess())
+    spec$cols[ids] <- lapply(ids, function(id) readr::col_character())
+    d <- readr::read_csv(
       file,
-      stringsAsFactors = FALSE,
-      check.names = FALSE,
-      na.strings = "NA",
-      colClasses = classes
+      col_types = spec,
+      name_repair = "minimal",
+      na = "NA",
+      trim_ws = FALSE,
+      show_col_types = FALSE,
+      progress = FALSE
     )
+    if (nrow(readr::problems(d))) {
+      cli::cli_abort("Parsing failed for {.file {file}}.")
+    }
+    as.data.frame(d)
   })
   names(tables) <- sub("\\.csv$", "", basename(files))
   deliberation_data(
@@ -210,23 +233,6 @@ row_key <- function(d, columns) {
     ifelse(is.na(v), "N;", paste0(nchar(v), ":", v))
   })
   do.call(paste0, values)
-}
-
-bind_rows <- function(rows) {
-  rows <- Filter(function(x) !is.null(x) && nrow(x) > 0, rows)
-  if (!length(rows)) {
-    return(data.frame())
-  }
-  fields <- unique(unlist(lapply(rows, names)))
-  rows <- lapply(rows, function(x) {
-    for (nm in setdiff(fields, names(x))) {
-      x[[nm]] <- NA
-    }
-    x[fields]
-  })
-  out <- do.call(rbind, rows)
-  rownames(out) <- NULL
-  out
 }
 
 split_rows <- function(d, keys) {
@@ -256,18 +262,5 @@ safe_sd <- function(x, w = rep(1, length(x))) {
 }
 
 with_seed <- function(seed, expr) {
-  seed_name <- ".Random.seed"
-  had <- exists(seed_name, envir = .GlobalEnv, inherits = FALSE)
-  if (had) {
-    old <- get(seed_name, envir = .GlobalEnv)
-  }
-  on.exit(
-    if (had) {
-      assign(seed_name, old, envir = .GlobalEnv)
-    } else if (exists(seed_name, envir = .GlobalEnv, inherits = FALSE)) {
-      rm(list = seed_name, envir = .GlobalEnv)
-    }
-  )
-  set.seed(seed)
-  force(expr)
+  withr::with_seed(seed, expr)
 }

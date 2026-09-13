@@ -13,3 +13,6 @@ A named list of table specifications.
 Required columns and primary keys for supplied tables. Optional columns and
 analysis-specific requirements are described in the schema vignette.
 }
+\examples{
+data_schema()$turns
+}

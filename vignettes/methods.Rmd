@@ -175,6 +175,33 @@ declaration, incomplete design fields, lonely PSUs or no residual design degrees
 of freedom yield unassessable inference. These intervals condition on scoring and
 do not incorporate annotation-model uncertainty.
 
+## Attrition and model-based cluster inference
+
+`post_attrition` is the proportion of observed baseline respondents lacking a
+usable post score, by event, group, item and declared subgroup. Its coverage is
+the baseline-observed fraction of the supplied item response roster. People
+absent from both waves cannot be recovered from that roster. Available-case
+change is a composition sensitivity calculation, not an attrition correction.
+
+`cluster_inference()` requires cluster columns, a target of inference and a
+reason to treat clusters as independent. It fits paired change using
+`clubSandwich` CR2 covariance and Satterthwaite degrees of freedom. The intercept
+estimates mean change; a focal indicator estimates the focal minus reference
+change directly, excluding people outside the contrast. Coverage uses the
+corresponding event or contrast response roster. Supplied weights enter weighted
+least squares when requested. Multiple cluster columns identify a single
+composite cluster, not multiway clustering. Effective degrees of freedom and the
+number of clusters accompany every result; unidentified or degenerate models are
+unassessable.
+
+These model-based intervals describe a declared repeated-sampling process. They
+do not establish population representativeness or a causal effect of attending
+deliberation. Use the separate `survey` design path for probability-sampling
+inference. The optional `inst/examples/wild-bootstrap.R` example compares a
+clustered subgroup change difference with `fwildclusterboot`; it is a tested
+sensitivity example, with its backend installed separately from the author's
+repository. No automatic choice of inference method is made from the p-value.
+
 ```{r}
 detectable_change(n = 100, sd_change = 0.2, design_effect = 1.5)
 ```
@@ -187,7 +214,7 @@ explicitly chosen assumptions.
 ## Policies and claims
 
 Policies record version, rationale, scope, required metrics, thresholds and
-coverage requirements. Conditions sharing a rule ID are ANDed. `aggregation`
+coverage requirements. Conditions sharing a rule ID are combined with AND. `aggregation`
 determines all/any evaluation among matching estimates, after optional item,
 contrast, detail and person selectors. Every matched value must be assessable
 before a condition can trigger, including `any` conditions. Missing coverage does
@@ -196,9 +223,11 @@ not meet a threshold of zero.
 Verdicts are per rule, not a hidden overall grade. `NOT_TRIGGERED` is not PASS.
 Policies can combine concentration, missing counterarguments, learning and opinion
 change, but the causal or normative interpretation remains the researcher's.
-Exploratory group comparisons and raw randomization p-values are not adjusted for
-multiple testing; specify the testing family and adjustment externally before
-using p-values as confirmatory claims.
+Raw p-values remain available. `test_families` declares named, nonoverlapping
+sets of metric names. Holm adjustment pools every matching event, episode, item
+and contrast row in each family. Unassessable members remain NA and count toward
+family size. Define families before inspecting results; adjustment does not make
+post hoc selection confirmatory.
 
 The software records seed, configuration, table hashes, evaluated memberships,
 evidence provenance and R session information. Reproducibility does not imply

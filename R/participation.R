@@ -20,7 +20,7 @@ union_intervals <- function(start, end) {
       b <- end[i]
     }
   }
-  bind_rows(c(out, list(data.frame(start = a, end = b))))
+  dplyr::bind_rows(c(out, list(data.frame(start = a, end = b))))
 }
 
 interval_length <- function(start, end) {
@@ -249,5 +249,5 @@ participation_metrics <- function(x, contrasts, config) {
       )
     }
   }
-  bind_rows(collector$rows)
+  dplyr::bind_rows(collector$rows)
 }

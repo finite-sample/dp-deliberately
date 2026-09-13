@@ -15,3 +15,11 @@ A \code{deliberation_data} object with file hashes.
 \description{
 Read named CSV input tables
 }
+\examples{
+path <- tempfile()
+dir.create(path)
+write.csv(data.frame(event_id = "001", label = "Example"),
+  file.path(path, "events.csv"), row.names = FALSE)
+x <- read_deliberation(path)
+unlink(path, recursive = TRUE)
+}

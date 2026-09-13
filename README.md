@@ -12,11 +12,15 @@ discourse coding, knowledge, opinion change, and signed D/P/H measures. It retur
 ordinary data frames and a standalone HTML report. It does not assign a composite
 quality score or infer disadvantaged groups from personal characteristics.
 
+[Report gallery](https://finite-sample.github.io/deliberately/articles/report-gallery.html) ·
+[Design review](https://finite-sample.github.io/deliberately/articles/design-review.html)
+
 ## Install and run
 
 From a local checkout:
 
 ```sh
+make deps
 R CMD INSTALL .
 ```
 
@@ -41,8 +45,8 @@ render_audit(result, "audit.html")
 ```
 
 Rendering needs `rmarkdown`, `knitr`, and Pandoc; RStudio includes Pandoc.
-Sampling inference additionally uses `survey`. The audit engine's sole
-non-base dependency is `digest`. No API key or model service is required.
+Sampling inference additionally uses `survey`. Typed inputs and validation use `readr`, `dplyr` and `assertr`.
+No API key or model service is required.
 
 ## Given X, produce Y
 
@@ -95,6 +99,29 @@ matching estimates. Missing estimates, missing diagnostics or inadequate coverag
 produce `NOT_ASSESSED`. A condition not met produces `NOT_TRIGGERED`, never an
 implicit PASS. D/P/H have no built-in failure thresholds.
 
+## Uncertainty follows the question
+
+The default audit describes the observed event. For a declared model with
+independent groups, request CR2/Satterthwaite inference explicitly:
+
+```r
+config <- audit_config(cluster = cluster_inference(
+  "group_id", target = "Comparable independently formed groups",
+  rationale = "The study design supports independence across these groups."
+))
+result <- audit_dp(x, education, config = config)
+```
+
+This adds intervals for paired mean changes and direct subgroup differences.
+The specification does not establish independence or identify an effect of
+deliberation. `survey` handles declared probability samples separately; assignment
+tests preserve declared randomization constraints using `randomizr`.
+
+Use `test_families = list(changes = "cluster_mean_change")` to apply Holm adjustment
+to all matching rows across events. Families are explicit and nonoverlapping;
+raw p-values remain available. The optional wild-bootstrap example is separate
+from the CRAN package's dependencies.
+
 ## Human and model coding
 
 The same annotation and link tables accept either source. They require coder,
@@ -145,10 +172,11 @@ make document
 make ci
 make ci-docker
 make examples
-Rscript inst/examples/distortions.R ../distortions
+Rscript inst/examples/gallery.R ../distortions
 make docs
 ```
 
+The package follows [r-canon](https://github.com/gojiplus/r-canon).
 Local Docker CI uses the standard `rocker/r2u` image, including native ARM support. `make ci` runs lint,
 testthat, package build and `R CMD check`. Tests exercise formulas, incomplete
 inputs, policies, inference, importer behavior and report rendering. pkgdown uses

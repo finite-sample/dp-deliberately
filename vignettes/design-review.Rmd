@@ -1,0 +1,123 @@
+---
+title: "What this audit can establish: a design-based review"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{What this audit can establish: a design-based review}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+An audit can document what happened and reveal a problem worth investigating.
+Its numbers do not, by themselves, identify why it happened or establish that a
+Deliberative Poll succeeded. This review applies published design principles from
+[Lin, Green and Coppock's lab SOP, version 1.05 (2016)](https://alexandercoppock.com/Green-Lab-SOP/Green_Lab_SOP.pdf).
+It is our assessment, not a review or endorsement by Donald Green.
+
+## Start with the comparison
+
+A participant's post-survey response minus their pre-survey response is a change,
+not an effect of deliberation. Time, outside information, survey repetition and
+selective response can all contribute. Random allocation to small groups does not
+randomize participation in deliberation itself. It supports a different question:
+whether allowed group assignments would change outcomes, under a specified null
+and an actual assignment mechanism.
+
+The package therefore separates finite-event descriptions, probability-sample
+estimates, model-based cluster inference and assignment tests. A p-value in one
+category does not validate a claim in another.
+
+| Diagnostic | Question answered | What would support a stronger claim? |
+|---|---|---|
+| Pre/post opinion or knowledge change | What changed among these respondents? | A comparison design identifying the effect of deliberation |
+| Sample benchmark differences | How do observed margins differ from targets? | Valid population benchmarks, joint-distribution checks and sampling/nonresponse evidence |
+| Attendance prediction | Is attendance predictable from declared baseline measurements? | Evidence about unobserved selection; AUC alone cannot establish ignorability |
+| Group associations | How much variation is associated with observed group labels? | Verified assignment and a correctly specified randomization test |
+| Voice differences | How was recorded speech distributed? | Attendance opportunity, reliable transcripts and direct evidence of exclusion or coercion |
+| Argument coverage | Which declared arguments were observed? | Independently justified inventory and validated coding |
+| D/P/H | How did attitudes move or disperse? | Mechanism evidence; movement alone does not identify domination or deliberative failure |
+
+## Verify delivery and measurement
+
+A roster is not proof of attendance; a briefing file is not proof that someone read
+it. Timestamped attendance, recording coverage, material availability and reviewed
+coding support progressively narrower claims. Missing recordings suppress
+complete-session silence estimates. Missing response links remain unknown.
+
+The weakest measurement link limits the interpretation. Exact coder agreement
+ignores chance agreement and does not validate a construct. Model confidence does
+not establish calibration. Until coding has been validated against independently
+reviewed examples, dialogue results are conditional on the supplied labels.
+
+## Ask who disappeared
+
+Paired analysis avoids comparing different people across waves, but it describes
+respondents who supplied both answers. The report shows post-wave attrition among
+baseline respondents by item, group and declared subgroup. People missing from
+both waves require a separate expected-response roster; the observed response
+union cannot count them as item nonrespondents without an administration record.
+
+Available-wave estimates answer a different question and are displayed as a
+composition sensitivity analysis. A discrepancy warrants investigation; agreement
+does not prove ignorable attrition. Lee bounds require additional assumptions such
+as monotone selection and a suitable treatment comparison. This package does not
+apply them automatically to pre/post data.
+
+## Count the independent units
+
+Large respondent counts can coexist with little independent information. Specify
+why groups, events or another unit can be treated as independent; a grouping column
+alone is not that argument. Clustering cannot repair confounding, dependence across
+declared clusters, or an invalid estimand.
+
+The optional cluster specification uses `clubSandwich` CR2 covariance and
+Satterthwaite degrees of freedom for linear paired mean changes and direct
+focal–reference differences. Report the effective degrees of freedom alongside
+cluster counts. Very few or highly unequal clusters can leave inference
+uninformative even when software returns a number.
+
+The [wild-bootstrap example](https://github.com/finite-sample/deliberately/blob/main/inst/examples/wild-bootstrap.R)
+compares a null-imposed wild cluster bootstrap with CR2 on a declared linear
+contrast. It is a sensitivity exercise, not a universal fix for few clusters.
+`fwildclusterboot` is installed separately from its authors' repository because
+it is archived on CRAN. Its code is not copied into deliberately.
+
+## Test the difference directly
+
+A significant estimate in one subgroup and an insignificant estimate in another
+do not establish a subgroup difference. The package's cluster contrast estimates
+the focal group's mean paired change minus the reference group's mean paired
+change directly. It remains a descriptive/model-based comparison between defined
+groups, not the causal effect of disadvantage.
+
+D is especially easy to overinterpret: movement toward an advantaged group's
+baseline view is not evidence that its members caused that movement. They may have
+started closer to evidence that everyone encountered. A case for domination needs
+independent process evidence and consideration of competing explanations.
+
+## Avoid selecting the alarming result
+
+With many groups, items and thresholds, some unusual values are expected. Policy
+thresholds need a stated rationale and should be set before reviewing the event's
+outcomes when making confirmatory claims. Holm adjustment is available only for explicitly
+declared metric families; raw results remain visible. Adjustment controls a testing
+error rate under its assumptions, not the validity of a quality label.
+
+Covariates should be selected from baseline measurements for their anticipated
+predictive relevance. Selecting them because they happen to look imbalanced opens
+an additional analysis choice. The report records configuration and seeds, but
+reproducibility does not establish preregistration.
+
+## What changed during the software audit
+
+The initial implementation reproduced the source H/P/D calculations but contained
+two coverage defects. Unscored knowledge outcomes reported usable counts despite
+missing scores: a synthetic event reported 16/20 coverage instead of 0/20.
+An interruption ratio used focal/reference counts for coverage: a fully coded
+one-versus-three comparison reported 1/3 instead of 4/4. The ratio estimate was
+unchanged, but the coverage error could prevent a policy rule from being assessed.
+Regression tests reproduce both defects and verify the corrected denominators.
+
+Malformed configuration flags and character versions of logical fields are now
+rejected at the input boundary. These are software repairs. The design limitations
+above remain substantive limitations requiring better evidence or a different
+research design.

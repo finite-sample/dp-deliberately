@@ -19,3 +19,6 @@ identifiers receive marked row IDs; conflicting nonmissing IDs are errors.
 \description{
 Import survey data from the distortions replication project
 }
+\examples{
+if (dir.exists("../distortions/data")) read_distortions("../distortions")
+}

@@ -16,3 +16,6 @@ result means no detected problems, not evidence of substantive validity.
 \description{
 Validate table structure, values, and relationships
 }
+\examples{
+validate_data(example_deliberation())
+}

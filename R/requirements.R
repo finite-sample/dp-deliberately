@@ -2,6 +2,8 @@
 #' @return A data frame with analysis, layer, required tables, required fields,
 #'   unit, denominator, and assumptions. Semicolon-separated entries are AND
 #'   requirements; additional checks are made on each event's usable data.
+#' @examples
+#' analysis_requirements()[c("analysis", "tables", "assumptions")]
 #' @export
 analysis_requirements <- function() {
   collector <- new.env(parent = emptyenv())
@@ -134,6 +136,24 @@ analysis_requirements <- function() {
     "paired response domain of supplied sample",
     "Declared probability sampling; response ignorability is not established"
   )
+  add(
+    "attrition",
+    "outcomes",
+    "people;items;waves;responses",
+    "",
+    "episode/item/group/contrast",
+    "observed baseline respondents",
+    "Post missingness among baseline respondents; roster-only absence is separate"
+  )
+  add(
+    "cluster_inference",
+    "outcomes",
+    "people;items;waves;responses",
+    "",
+    "episode/item/contrast",
+    "paired respondents",
+    "Explicit independent-cluster declaration and target; model-based CR2 inference"
+  )
   do.call(rbind, collector$rows)
 }
 
@@ -142,6 +162,8 @@ analysis_requirements <- function() {
 #' @param contrasts Optional definitions from [define_contrast()].
 #' @return One row per event and analysis with readiness and missing inputs.
 #'   Readiness describes inputs, not whether every metric is estimable.
+#' @examples
+#' available_analyses(example_deliberation())
 #' @export
 available_analyses <- function(x, contrasts = list()) {
   req <- analysis_requirements()
@@ -178,7 +200,7 @@ available_analyses <- function(x, contrasts = list()) {
       )
     }
   }
-  bind_rows(rows)
+  dplyr::bind_rows(rows)
 }
 
 metric <- function(

@@ -5,10 +5,11 @@ paired_responses <- function(x, membership = "paired", weighted = FALSE) {
   if (any(vapply(list(r, w, it), is.null, logical(1)))) {
     return(data.frame())
   }
-  r <- merge(
+  r <- dplyr::left_join(
     r,
     w[c("event_id", "episode_id", "wave_id", "phase")],
-    by = c("event_id", "episode_id", "wave_id")
+    by = c("event_id", "episode_id", "wave_id"),
+    relationship = "many-to-one"
   )
   r <- r[r$phase %in% c("pre", "post"), , drop = FALSE]
   key <- c("event_id", "episode_id", "person_id", "item_id")
@@ -16,14 +17,26 @@ paired_responses <- function(x, membership = "paired", weighted = FALSE) {
   post <- r[r$phase == "post", c(key, "value"), drop = FALSE]
   names(pre)[ncol(pre)] <- "pre_raw"
   names(post)[ncol(post)] <- "post_raw"
-  d <- merge(pre, post, by = key, all = TRUE)
-  d <- merge(d, it, by = c("event_id", "item_id"))
+  d <- dplyr::full_join(pre, post, by = key, relationship = "one-to-one")
+  d <- dplyr::left_join(
+    d,
+    it,
+    by = c("event_id", "item_id"),
+    relationship = "many-to-one"
+  )
   p <- table_data(x, "people")
   if (!is.null(p)) {
     p <- p[p$role == "participant", c("event_id", "person_id"), drop = FALSE]
-    d <- merge(d, p, by = c("event_id", "person_id"))
+    d <- dplyr::inner_join(
+      d,
+      p,
+      by = c("event_id", "person_id"),
+      relationship = "many-to-one"
+    )
   }
-  if (!nrow(d)) return(data.frame())
+  if (!nrow(d)) {
+    return(data.frame())
+  }
   d$paired <- is.finite(d$pre_raw) & is.finite(d$post_raw)
   d$pre <- (d$pre_raw - d$lower) / (d$upper - d$lower)
   d$post <- (d$post_raw - d$lower) / (d$upper - d$lower)
@@ -142,7 +155,7 @@ append_knowledge_index <- function(d, items) {
       rows[[length(rows) + 1L]] <- row
     }
   }
-  bind_rows(rows)
+  dplyr::bind_rows(rows)
 }
 
 signed_movement <- function(pre, post, reference, eps = 1e-12) {
@@ -178,7 +191,7 @@ outcome_metrics <- function(x, contrasts, config) {
       value,
       detail = "",
       contrast = NA_character_,
-      n = sum(z$paired),
+      n = sum(is.finite(z$pre) & is.finite(z$post)),
       denominator = nrow(z),
       reason = ""
     ) {
@@ -326,7 +339,7 @@ outcome_metrics <- function(x, contrasts, config) {
       }
     }
   }
-  out <- bind_rows(collector$rows)
+  out <- dplyr::bind_rows(collector$rows)
   out$membership <- config$membership
   out$weighting <- if (config$weighted) "supplied" else "equal participant"
   out

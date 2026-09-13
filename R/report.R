@@ -5,6 +5,13 @@
 #'   Default FALSE; the returned R object always retains supplied evidence.
 #' @param title Report title.
 #' @return The normalized output path, invisibly. Requires rmarkdown and Pandoc.
+#' @examples
+#' if (requireNamespace("rmarkdown", quietly = TRUE) && rmarkdown::pandoc_available()) {
+#'   result <- audit_dp(example_deliberation(), config = audit_config(permutations = 9))
+#'   file <- tempfile(fileext = ".html")
+#'   render_audit(result, file)
+#'   unlink(file)
+#' }
 #' @export
 render_audit <- function(
   result,
@@ -12,6 +19,13 @@ render_audit <- function(
   include_evidence = FALSE,
   title = "A deliberate look"
 ) {
+  if (
+    !is.logical(include_evidence) ||
+      length(include_evidence) != 1L ||
+      is.na(include_evidence)
+  ) {
+    cli::cli_abort("include_evidence must be TRUE or FALSE.")
+  }
   if (!inherits(result, "deliberation_audit")) {
     stop("Expected deliberation_audit.")
   }
@@ -28,6 +42,11 @@ render_audit <- function(
   if (!nzchar(template)) {
     stop("Report template unavailable; install the package first.")
   }
+  for (pkg in c("bslib", "ggplot2", "gt", "DT", "htmltools")) {
+    if (!requireNamespace(pkg, quietly = TRUE)) {
+      cli::cli_abort("Install {.pkg {pkg}} to render reports.")
+    }
+  }
   file <- path.expand(file)
   dir.create(dirname(file), recursive = TRUE, showWarnings = FALSE)
   staging <- tempfile("deliberately-report-")
@@ -39,13 +58,21 @@ render_audit <- function(
   env$result <- result
   env$include_evidence <- include_evidence
   env$report_title <- title
+  env$report_summary <- report_summary
+  env$report_plot <- report_plot
+  env$report_metrics <- report_metrics
+  env$report_findings <- report_findings
   rmarkdown::render(
     input,
     output_file = basename(file),
     output_dir = normalizePath(dirname(file)),
     envir = env,
     quiet = TRUE,
-    output_options = list(self_contained = TRUE, mathjax = NULL)
+    output_options = list(
+      self_contained = TRUE,
+      mathjax = NULL,
+      theme = bslib::bs_theme(version = 5, bootswatch = "flatly")
+    )
   )
   invisible(normalizePath(file))
 }

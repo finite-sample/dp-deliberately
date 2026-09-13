@@ -5,6 +5,8 @@
 #'   replication's explicit convention. Source wave column names are retained.
 #'   Exact duplicates ignoring X are removed and logged. Missing source person
 #'   identifiers receive marked row IDs; conflicting nonmissing IDs are errors.
+#' @examples
+#' if (dir.exists("../distortions/data")) read_distortions("../distortions")
 #' @export
 read_distortions <- function(path) {
   files <- file.path(path, "data", c("polardata.csv", "poll_indices.csv"))
@@ -95,7 +97,7 @@ read_distortions <- function(path) {
     source_pre = dictionary$t1var,
     source_post = dictionary$t2_t3var
   )
-  waves <- bind_rows(lapply(events$event_id, function(event) {
+  waves <- dplyr::bind_rows(lapply(events$event_id, function(event) {
     data.frame(
       event_id = event,
       episode_id = "deliberation",
@@ -134,7 +136,7 @@ read_distortions <- function(path) {
       midpoint = NA_real_,
       scoring = "proportion_correct"
     )
-    items <- bind_rows(list(items, knowledge))
+    items <- dplyr::bind_rows(list(items, knowledge))
     for (phase in c("pre", "post")) {
       col <- if (phase == "pre") "t1know" else "t2know"
       responses[[length(responses) + 1L]] <- data.frame(
@@ -147,7 +149,7 @@ read_distortions <- function(path) {
       )
     }
   }
-  responses <- bind_rows(responses)
+  responses <- dplyr::bind_rows(responses)
   responses$source_value <- responses$value
   roundoff <- is.finite(responses$value) &
     ((responses$value < 0 & responses$value >= -1e-10) |

@@ -21,3 +21,6 @@ Each named argument is a data frame described by \code{\link[=data_schema]{data_
 are scoped to an event. Extra columns (including attributes on people) are
 preserved. No tables or values are imputed.
 }
+\examples{
+deliberation_data(events = data.frame(event_id = "event1", label = "Example"))
+}
