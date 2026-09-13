@@ -2,7 +2,9 @@
 #'
 #' Clustering describes dependence under a declared repeated-sampling model.
 #' It does not establish probability sampling or identify an effect of deliberation.
-#' @param clusters Character column names in assignments/outcomes or people.
+#' @param clusters Character column names, resolved first in derived outcomes
+#'   (for example `group_id`), then assignments, then people. Assignment fields
+#'   join by event, episode and person; people fields join by event and person.
 #'   Multiple columns identify one composite cluster, not multiway clustering.
 #' @param target Population or repeated-process target of inference.
 #' @param rationale Why these clusters can be treated as independent.
@@ -78,8 +80,22 @@ cluster_metrics <- function(x, contrasts, config) {
   d <- paired_responses(x, "paired", config$weighted)
   people <- table_data(x, "people")
   cols <- config$cluster$clusters
-  extra <- setdiff(cols, names(d))
-  if (length(extra) && all(extra %in% names(people))) {
+  if (!nrow(d)) {
+    return(data.frame())
+  }
+  assignments <- table_data(x, "assignments")
+  extra <- intersect(setdiff(cols, names(d)), names(assignments))
+  if (length(extra)) {
+    keys <- c("event_id", "episode_id", "person_id")
+    d <- dplyr::left_join(
+      d,
+      assignments[c(keys, extra)],
+      by = keys,
+      relationship = "many-to-one"
+    )
+  }
+  extra <- intersect(setdiff(cols, names(d)), names(people))
+  if (length(extra)) {
     d <- dplyr::left_join(
       d,
       people[c("event_id", "person_id", extra)],

@@ -93,3 +93,27 @@ test_that("cluster contrasts exclude outsiders and use their own denominator", {
   expect_true(all(domain$denominator == 2))
   expect_true(all(domain$coverage == 1))
 })
+
+test_that("assignment and person columns support composite clusters", {
+  x <- example_deliberation()
+  x$tables$assignments$site_id <- rep(c("a", "b"), each = 8)
+  r <- x$tables$responses
+  changed <- r$person_id == "p01" & r$wave_id == "after"
+  r$value[changed & r$item_id == "support"] <- 3.1
+  r$value[changed & r$item_id == "knowledge"] <- 0
+  x$tables$responses <- r
+  spec <- cluster_inference("site_id", "Comparable sites", "Independent sites")
+  config <- audit_config(permutations = 9, cluster = spec)
+  m <- cluster_metrics(x, list(), config)
+  expect_true(all(m$n_clusters == 2))
+  expect_true(all(is.finite(m$estimate)))
+  x$tables$people$region <- "region"
+  config$cluster <- cluster_inference(
+    c("region", "site_id"),
+    "Comparable sites",
+    "Independent sites"
+  )
+  composite <- cluster_metrics(x, list(), config)
+  expect_equal(composite$estimate, m$estimate)
+  expect_equal(composite$n_clusters, m$n_clusters)
+})

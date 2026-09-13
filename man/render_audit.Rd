@@ -28,7 +28,9 @@ The normalized output path, invisibly. Requires rmarkdown and Pandoc.
 Render a standalone HTML audit report
 }
 \examples{
-if (requireNamespace("rmarkdown", quietly = TRUE) && rmarkdown::pandoc_available()) {
+report_packages <- c("rmarkdown", "knitr", "bslib", "ggplot2", "gt", "DT", "htmltools")
+if (all(vapply(report_packages, requireNamespace, logical(1), quietly = TRUE)) &&
+    rmarkdown::pandoc_available()) {
   result <- audit_dp(example_deliberation(), config = audit_config(permutations = 9))
   file <- tempfile(fileext = ".html")
   render_audit(result, file)

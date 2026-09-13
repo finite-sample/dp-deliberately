@@ -17,7 +17,13 @@ quality score or infer disadvantaged groups from personal characteristics.
 
 ## Install and run
 
-From a local checkout:
+Install the development version, including the report dependencies:
+
+```r
+remotes::install_github("finite-sample/deliberately", dependencies = TRUE)
+```
+
+Or from a local checkout:
 
 ```sh
 make deps
@@ -44,7 +50,8 @@ result$metrics
 render_audit(result, "audit.html")
 ```
 
-Rendering needs `rmarkdown`, `knitr`, and Pandoc; RStudio includes Pandoc.
+Rendering uses `rmarkdown`, `knitr`, `bslib`, `ggplot2`, `gt`, `DT`, `htmltools`,
+and Pandoc; RStudio includes Pandoc.
 Sampling inference additionally uses `survey`. Typed inputs and validation use `readr`, `dplyr` and `assertr`.
 No API key or model service is required.
 

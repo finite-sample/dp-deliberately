@@ -55,8 +55,9 @@ test_that("the adapter logs exact duplicates, unresolved identities and endpoint
 })
 
 test_that("HTML rendering works offline and evidence inclusion is explicit", {
-  skip_if_not_installed("rmarkdown")
-  skip_if_not_installed("knitr")
+  for (pkg in c("rmarkdown", "knitr", "bslib", "ggplot2", "gt", "DT", "htmltools")) {
+    skip_if_not_installed(pkg)
+  }
   skip_if_not(
     rmarkdown::pandoc_available(),
     "Pandoc is required for report rendering"

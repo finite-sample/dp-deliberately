@@ -7,7 +7,9 @@
 cluster_inference(clusters, target, rationale)
 }
 \arguments{
-\item{clusters}{Character column names in assignments/outcomes or people.
+\item{clusters}{Character column names, resolved first in derived outcomes
+(for example \code{group_id}), then assignments, then people. Assignment fields
+join by event, episode and person; people fields join by event and person.
 Multiple columns identify one composite cluster, not multiway clustering.}
 
 \item{target}{Population or repeated-process target of inference.}
