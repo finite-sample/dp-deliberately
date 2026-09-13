@@ -117,3 +117,21 @@ test_that("assignment and person columns support composite clusters", {
   expect_equal(composite$estimate, m$estimate)
   expect_equal(composite$n_clusters, m$n_clusters)
 })
+
+test_that("zero cluster covariance cannot masquerade as precise inference", {
+  x <- example_deliberation()
+  x$tables$assignments$site_id <- rep(c("a", "b"), each = 8)
+  spec <- cluster_inference("site_id", "Comparable sites", "Independent sites")
+  m <- cluster_metrics(x, list(), audit_config(cluster = spec))
+  z <- m[m$item_id == "knowledge", ]
+  expect_identical(z$status, "unassessable")
+  expect_true(is.na(z$p_value))
+  expect_match(z$reason, "Cluster-robust variance is numerically zero")
+  d <- data.frame(
+    cluster = rep(1:6, each = 2),
+    change = .1 + rep(seq_len(6) * 1e-4, each = 2) + rep(c(-.01, .01), 6),
+    focal = 0,
+    weight = 1
+  )
+  expect_true(is.finite(cluster_interval(d, .95)["se"]))
+})

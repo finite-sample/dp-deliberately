@@ -62,6 +62,11 @@ cluster_interval <- function(d, confidence) {
   if (!is.finite(test$df_Satt) || test$df_Satt < 1 || !is.finite(test$SE)) {
     cli::cli_abort("Insufficient effective degrees of freedom.")
   }
+  if (test$SE <= .Machine$double.eps * max(abs(d$change))) {
+    cli::cli_abort(
+      "Cluster-robust variance is numerically zero; uncertainty is unassessable."
+    )
+  }
   critical <- stats::qt((1 + confidence) / 2, test$df_Satt)
   c(
     estimate = test$beta,

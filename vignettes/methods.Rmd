@@ -192,7 +192,9 @@ corresponding event or contrast response roster. Supplied weights enter weighted
 least squares when requested. Multiple cluster columns identify a single
 composite cluster, not multiway clustering. Effective degrees of freedom and the
 number of clusters accompany every result; unidentified or degenerate models are
-unassessable.
+unassessable. An SE no greater than machine epsilon times the largest absolute
+change is treated as numerical zero; individual-level residual variation cannot
+substitute for between-cluster variation.
 
 These model-based intervals describe a declared repeated-sampling process. They
 do not establish population representativeness or a causal effect of attending

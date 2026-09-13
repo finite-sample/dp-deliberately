@@ -5,7 +5,7 @@ Initial development candidate; not submitted to CRAN.
 ## Local checks
 
 macOS and Linux (rocker/r2u): 0 errors, 0 warnings, 0 notes from the built source
-package. Local full tests: 164 passed, no failures, warnings or skips, including
+package. Local full tests: 168 passed, no failures, warnings or skips, including
 the NOT_CRAN simulation tier. The CRAN tier skips that 1,000-replication test.
 
 ## Data and examples

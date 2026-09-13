@@ -86,3 +86,18 @@ rows were checked. Only aggregate HTML is copied to the public site.
 The separate r-canon change is draft PR https://github.com/gojiplus/r-canon/pull/23.
 Independent review found no blocking defects and all applicable hosted checks
 passed. The fleet tag was not changed. See `r-canon-review.md`.
+
+## Numerical variance repair
+
+The repair review independently verified assignment and composite clusters and
+identified one further degenerate case: two clusters with identical knowledge
+mean changes returned an SE of 2.94e-17 and a p-value of 3.75e-17. Positive
+individual residual variation did not supply between-cluster variation.
+
+The CR2 path now rejects SEs no larger than machine epsilon times the largest
+absolute change. A regression failed in three assertions before this guard and
+passes after it; a small but nonzero variance control remains estimable. The full
+local suite now has 168 passing assertions with zero failures, warnings or skips,
+and the built-package check has zero errors, warnings and notes. The final
+independent verification follows this narrow repair; historical review reports
+are retained with their original findings rather than rewritten as clean reviews.
