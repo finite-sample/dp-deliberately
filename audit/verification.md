@@ -139,3 +139,16 @@ passes 0/0/0. Windows hosted verification is the decisive regression check.
 The publisher's Fishkin DOI landing page blocked the hosted link checker with
 403. README now links to the author's Stanford publication record, verified to
 return 200. The deployed package's standard URL check passes all 10 URLs.
+
+The independent reviewer verified the Windows repair at
+`8554d5a9094e3ce2b2919fb236dae8655fce7bcd` in a fresh archive: 29 cluster assertions,
+zero lints, correct finite/df/variance guard order, no material unresolved finding.
+See `windows-review.md`.
+
+`devtools::check(document=FALSE, remote=TRUE, manual=TRUE)` passed with zero errors,
+zero warnings and one expected incoming NOTE: “New submission.” The standard
+URL check passed all 10 links. The live home page, gallery, design review, schema
+reference, and actual/synthetic reports returned HTTP 200 and loaded without
+JavaScript errors in an isolated browser. Hosted coverage measured 91.50%.
+
+Windows-repaired local artifact SHA-256: `6a3bbae0a0e3ae2a107c657946cb874fb36b6219b6d671a17dc7dc16a4080147`.

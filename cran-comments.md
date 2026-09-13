@@ -1,12 +1,18 @@
 ## Candidate status
 
-Initial development candidate; not submitted to CRAN.
+Initial development candidate; not submitted to CRAN and no release tag created.
 
 ## Local checks
 
-macOS and Linux (rocker/r2u): 0 errors, 0 warnings, 0 notes from the built source
-package. Local full tests: 168 passed, no failures, warnings or skips, including
-the NOT_CRAN simulation tier. The CRAN tier skips that 1,000-replication test.
+macOS full `devtools::check(remote=TRUE, manual=TRUE)`: 0 errors, 0 warnings,
+1 NOTE: “New submission,” expected because this is a new package.
+
+Ordinary built-package checks on macOS and Linux (rocker/r2u) passed 0/0/0.
+The final Windows df-boundary repair was independently reviewed and passes the
+macOS full suite: 168 assertions, no failures, warnings or skips. The CRAN tier
+skips the 1,000-replication simulation; the canonical check and coverage workflows
+explicitly run it with NOT_CRAN=true. Hosted Windows confirmation is required
+before treating the candidate as ready for submission.
 
 ## Data and examples
 
@@ -16,11 +22,14 @@ tarball. Package examples and vignettes need no network or API credentials.
 An optional bootstrap script uses an external backend; it is not a dependency of
 the installed package or its examples/tests.
 
-## Reverse dependencies
+## Reverse dependencies and links
 
-`devtools::revdep()` returned none.
+`devtools::revdep()` returned none. `urlchecker::url_check()` passed all 10 URLs.
+Spelling and rendered documentation were checked locally. Independent review
+reports and dispositions are in audit/.
 
-## Remaining release gates
+## Remaining submission gates
 
-Independent candidate review, hosted platform checks, final URL checks and full
-manual/as-CRAN checking are recorded in audit/ before any submission decision.
+Final hosted checks are tracked on GitHub Actions. Automatic approval review
+blocked the separate win-builder upload; explicit approval has been requested.
+No win-builder result or CRAN submission is claimed.
