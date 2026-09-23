@@ -75,7 +75,7 @@ focal–reference differences. Report the effective degrees of freedom alongside
 cluster counts. Very few or highly unequal clusters can leave inference
 uninformative even when software returns a number.
 
-The [wild-bootstrap example](https://github.com/finite-sample/deliberately/blob/main/inst/examples/wild-bootstrap.R)
+The [wild-bootstrap example](https://github.com/finite-sample/dp-deliberately/blob/main/inst/examples/wild-bootstrap.R)
 compares a null-imposed wild cluster bootstrap with CR2 on a declared linear
 contrast. It is a sensitivity exercise, not a universal fix for few clusters.
 `fwildclusterboot` is installed separately from its authors' repository because

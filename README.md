@@ -12,15 +12,15 @@ discourse coding, knowledge, opinion change, and signed D/P/H measures. It retur
 ordinary data frames and a standalone HTML report. It does not assign a composite
 quality score or infer disadvantaged groups from personal characteristics.
 
-[Report gallery](https://finite-sample.github.io/deliberately/articles/report-gallery.html) ·
-[Design review](https://finite-sample.github.io/deliberately/articles/design-review.html)
+[Report gallery](https://finite-sample.github.io/dp-deliberately/articles/report-gallery.html) ·
+[Design review](https://finite-sample.github.io/dp-deliberately/articles/design-review.html)
 
 ## Install and run
 
 Install the development version, including the report dependencies:
 
 ```r
-remotes::install_github("finite-sample/deliberately", dependencies = TRUE)
+remotes::install_github("finite-sample/dp-deliberately", dependencies = TRUE)
 ```
 
 Or from a local checkout:

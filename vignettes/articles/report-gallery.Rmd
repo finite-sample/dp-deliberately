@@ -51,7 +51,7 @@ Rscript inst/examples/gallery.R ../distortions
 
 This writes standalone HTML reports and audit R objects to `artifacts/gallery`.
 The real-data import reads `data/polardata.csv` and `data/poll_indices.csv` from
-the separately maintained [distortions repository](https://github.com/soodoku/distortions).
+the separately maintained [distortions repository](https://github.com/soodoku/dp-distortions).
 Source files are hashed; exact duplicate removal and endpoint rounding are logged.
 No participant data are bundled with this package.
 

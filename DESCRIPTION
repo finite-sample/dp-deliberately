@@ -12,8 +12,8 @@ Description: Validate deliberative polling data and produce modular diagnostics
 License: MIT + file LICENSE
 Encoding: UTF-8
 Language: en-US
-URL: https://finite-sample.github.io/deliberately/, https://github.com/finite-sample/deliberately
-BugReports: https://github.com/finite-sample/deliberately/issues
+URL: https://finite-sample.github.io/dp-deliberately/, https://github.com/finite-sample/dp-deliberately
+BugReports: https://github.com/finite-sample/dp-deliberately/issues
 Depends: R (>= 4.1.0)
 Imports: assertr, cli, digest, dplyr (>= 1.1.1), readr, rlang, tibble, withr,
     randomizr

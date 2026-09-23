@@ -75,7 +75,7 @@ This treatment is consistent with the current decision to make numerically zero 
 
 ### Optional renderer guards
 
-The `render_audit()` example and render test now check all optional packages used by the report: `rmarkdown`, `knitr`, `bslib`, `ggplot2`, `gt`, `DT`, and `htmltools`, plus Pandoc availability. This aligns examples/tests with the function's own dependency checks and avoids partial-environment failures. README names the same renderer dependency set and gives the updated `finite-sample/deliberately` installation location.
+The `render_audit()` example and render test now check all optional packages used by the report: `rmarkdown`, `knitr`, `bslib`, `ggplot2`, `gt`, `DT`, and `htmltools`, plus Pandoc availability. This aligns examples/tests with the function's own dependency checks and avoids partial-environment failures. README names the same renderer dependency set and gives the updated `finite-sample/dp-deliberately` installation location.
 
 ### Documentation and audit records
 
