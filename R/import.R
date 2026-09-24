@@ -1,24 +1,48 @@
-#' Import survey data from the distortions replication project
-#' @param path Directory containing data/polardata.csv and data/poll_indices.csv.
+#' Import historical distortions survey data from dp-data
+#' @param path Root of a dp-data checkout or release archive. Defaults to
+#'   `DP_DATA_ROOT`, or `../dp-data`.
+#' @param source_manifest Optional data frame with `file` and `sha256` columns
+#'   pinning both benchmark files. Defaults to the bundled source manifest.
+#'   Supply reviewed checksums explicitly when adopting a different snapshot.
 #' @return A validated survey-only bundle, with source hashes and an import ledger.
 #'   Source scales are already normalized to `[0,1]`; midpoint 0.5 follows the
 #'   replication's explicit convention. Source wave column names are retained.
 #'   Exact duplicates ignoring X are removed and logged. Missing source person
 #'   identifiers receive marked row IDs; conflicting nonmissing IDs are errors.
 #' @examples
-#' if (dir.exists("../distortions/data")) read_distortions("../distortions")
+#' if (dir.exists("../dp-data/evidence")) read_distortions("../dp-data")
 #' @export
-read_distortions <- function(path) {
-  files <- file.path(path, "data", c("polardata.csv", "poll_indices.csv"))
-  if (!all(file.exists(files))) {
-    stop("Expected data/polardata.csv and data/poll_indices.csv.")
+read_distortions <- function(
+  path = Sys.getenv("DP_DATA_ROOT", unset = "../dp-data"),
+  source_manifest = NULL
+) {
+  names <- c("polardata.tab", "attitude-indices.tab")
+  files <- file.path(path, "evidence", "benchmarks", names)
+  if (is.null(source_manifest)) {
+    source_manifest <- utils::read.csv(system.file(
+      "examples", "distortions-source.csv", package = "deliberately"
+    ), stringsAsFactors = FALSE)
   }
-  raw <- utils::read.csv(
+  valid_manifest <- all(c("file", "sha256") %in% colnames(source_manifest)) &&
+    nrow(source_manifest) == 2L && !anyDuplicated(source_manifest$file) &&
+    setequal(source_manifest$file, names)
+  if (!valid_manifest) {
+    stop("Expected a unique checksum entry for each historical benchmark.")
+  }
+  if (!all(file.exists(files))) {
+    stop("Missing dp-data historical benchmarks under evidence/benchmarks/.")
+  }
+  observed <- vapply(files, digest::digest, "", algo = "sha256", file = TRUE)
+  expected <- source_manifest$sha256[match(names, source_manifest$file)]
+  if (anyNA(expected) || !identical(unname(observed), unname(expected))) {
+    stop("Historical source checksum mismatch; review changes before updating pins.")
+  }
+  raw <- utils::read.delim(
     files[1],
     check.names = FALSE,
     stringsAsFactors = FALSE
   )
-  dictionary <- utils::read.csv(
+  dictionary <- utils::read.delim(
     files[2],
     check.names = FALSE,
     stringsAsFactors = FALSE
@@ -181,7 +205,7 @@ read_distortions <- function(path) {
     waves = waves,
     responses = responses,
     provenance = list(
-      adapter = "distortions-1",
+      adapter = "distortions-dp-data-1",
       ledger = ledger,
       duplicate_source_rows = which(duplicate),
       unresolved_source_rows = source_row[unresolved],

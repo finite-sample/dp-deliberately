@@ -1,7 +1,7 @@
 library(deliberately)
 
 args <- commandArgs(trailingOnly = TRUE)
-path <- if (length(args)) args[1] else "../distortions"
+path <- if (length(args)) args[1] else "../dp-data"
 x <- read_distortions(path)
 education <- define_contrast(
   "education",

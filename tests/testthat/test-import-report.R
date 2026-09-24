@@ -1,6 +1,6 @@
 test_that("the adapter logs exact duplicates, unresolved identities and endpoint roundoff", {
   path <- tempfile()
-  dir.create(file.path(path, "data"), recursive = TRUE)
+  dir.create(file.path(path, "evidence", "benchmarks"), recursive = TRUE)
   on.exit(unlink(path, recursive = TRUE))
   d <- data.frame(
     X = 1:4,
@@ -19,17 +19,27 @@ test_that("the adapter logs exact duplicates, unresolved identities and endpoint
     t1var = "pre",
     t2_t3var = "post"
   )
-  utils::write.csv(
+  utils::write.table(
     d,
-    file.path(path, "data", "polardata.csv"),
-    row.names = FALSE
+    file.path(path, "evidence", "benchmarks", "polardata.tab"),
+    sep = "\t", row.names = FALSE
   )
-  utils::write.csv(
+  utils::write.table(
     dictionary,
-    file.path(path, "data", "poll_indices.csv"),
-    row.names = FALSE
+    file.path(path, "evidence", "benchmarks", "attitude-indices.tab"),
+    sep = "\t", row.names = FALSE
   )
-  x <- read_distortions(path)
+  source_manifest <- data.frame(
+    file = c("polardata.tab", "attitude-indices.tab"),
+    sha256 = vapply(
+      file.path(path, "evidence", "benchmarks", c("polardata.tab", "attitude-indices.tab")),
+      digest::digest, "", algo = "sha256", file = TRUE
+    )
+  )
+  x <- read_distortions(path, source_manifest)
+  withr::local_envvar(c(DP_DATA_ROOT = path))
+  expect_identical(read_distortions(source_manifest = source_manifest)$tables, x$tables)
+  expect_error(read_distortions(path), "checksum mismatch")
   expect_equal(nrow(x$tables$people), 3)
   expect_equal(
     x$provenance$ledger$n[
@@ -46,12 +56,20 @@ test_that("the adapter logs exact duplicates, unresolved identities and endpoint
   expect_true(any(x$tables$responses$source_value > 1))
   expect_true(is.null(x$tables$randomization))
   d$post[4] <- .9
-  utils::write.csv(
+  utils::write.table(
     d,
-    file.path(path, "data", "polardata.csv"),
-    row.names = FALSE
+    file.path(path, "evidence", "benchmarks", "polardata.tab"),
+    sep = "\t", row.names = FALSE
   )
-  expect_error(read_distortions(path), "Conflicting source person IDs")
+  expect_error(read_distortions(path, source_manifest), "checksum mismatch")
+  source_manifest$sha256[1] <- digest::digest(
+    file.path(path, "evidence", "benchmarks", "polardata.tab"),
+    algo = "sha256", file = TRUE
+  )
+  expect_error(read_distortions(path, source_manifest), "Conflicting source person IDs")
+  expect_error(read_distortions(path, source_manifest[c(1, 1), ]), "unique checksum")
+  unlink(file.path(path, "evidence", "benchmarks", "polardata.tab"))
+  expect_error(read_distortions(path, source_manifest), "Missing dp-data")
 })
 
 test_that("HTML rendering works offline and evidence inclusion is explicit", {

@@ -6,14 +6,14 @@ output: rmarkdown::html_document
 ```{r build-reports, include=FALSE}
 root <- rprojroot::find_package_root_file()
 source_dir <- tempfile("distortions-")
-dir.create(file.path(source_dir, "data"), recursive = TRUE)
+dir.create(file.path(source_dir, "evidence", "benchmarks"), recursive = TRUE)
 manifest <- read.csv(file.path(root, "inst", "examples", "distortions-source.csv"))
 for (i in seq_len(nrow(manifest))) {
-  file <- file.path(source_dir, "data", manifest$file[i])
+  file <- file.path(source_dir, "evidence", "benchmarks", manifest$file[i])
   download.file(manifest$url[i], file, mode = "wb", quiet = TRUE)
   stopifnot(identical(digest::digest(file = file, algo = "sha256"), manifest$sha256[i]))
 }
-withr::with_envvar(c(DELIBERATELY_SOURCE = source_dir), {
+withr::with_envvar(c(DP_DATA_ROOT = source_dir), {
   withr::with_dir(root, source("inst/examples/gallery.R"))
 })
 destination <- file.path(root, "docs", "reports")
@@ -46,12 +46,13 @@ report leaves transcript and briefing diagnostics unavailable.
 From the development repository, with deliberately installed:
 
 ```sh
-Rscript inst/examples/gallery.R ../distortions
+Rscript inst/examples/gallery.R ../dp-data
 ```
 
 This writes standalone HTML reports and audit R objects to `artifacts/gallery`.
-The real-data import reads `data/polardata.csv` and `data/poll_indices.csv` from
-the separately maintained [distortions repository](https://github.com/soodoku/dp-distortions).
+The real-data import reads the frozen `polardata.tab` and `attitude-indices.tab`
+benchmarks from [dp-data](https://github.com/soodoku/dp-data), under
+`evidence/benchmarks/`. The bundled source manifest pins their revision and hashes.
 Source files are hashed; exact duplicate removal and endpoint rounding are logged.
 No participant data are bundled with this package.
 

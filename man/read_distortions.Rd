@@ -2,12 +2,20 @@
 % Please edit documentation in R/import.R
 \name{read_distortions}
 \alias{read_distortions}
-\title{Import survey data from the distortions replication project}
+\title{Import historical distortions survey data from dp-data}
 \usage{
-read_distortions(path)
+read_distortions(
+  path = Sys.getenv("DP_DATA_ROOT", unset = "../dp-data"),
+  source_manifest = NULL
+)
 }
 \arguments{
-\item{path}{Directory containing data/polardata.csv and data/poll_indices.csv.}
+\item{path}{Root of a dp-data checkout or release archive. Defaults to
+\code{DP_DATA_ROOT}, or \code{../dp-data}.}
+
+\item{source_manifest}{Optional data frame with \code{file} and \code{sha256} columns
+pinning both benchmark files. Defaults to the bundled source manifest.
+Supply reviewed checksums explicitly when adopting a different snapshot.}
 }
 \value{
 A validated survey-only bundle, with source hashes and an import ledger.
@@ -17,8 +25,8 @@ Exact duplicates ignoring X are removed and logged. Missing source person
 identifiers receive marked row IDs; conflicting nonmissing IDs are errors.
 }
 \description{
-Import survey data from the distortions replication project
+Import historical distortions survey data from dp-data
 }
 \examples{
-if (dir.exists("../distortions/data")) read_distortions("../distortions")
+if (dir.exists("../dp-data/evidence")) read_distortions("../dp-data")
 }

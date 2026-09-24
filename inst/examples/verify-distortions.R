@@ -1,6 +1,7 @@
 library(deliberately)
 args <- commandArgs(trailingOnly = TRUE)
-path <- if (length(args)) args[1] else "../distortions"
+path <- if (length(args)) args[1] else "../dp-data"
+reference_path <- if (length(args) >= 2L) args[2] else "../dp-distortions"
 x <- read_distortions(path)
 ct <- define_contrast(
   "education",
@@ -17,7 +18,7 @@ for (metric in c("H", "P", "D")) {
   } else {
     "03_hom_pol_by_group_issue.csv"
   }
-  ref <- read.csv(file.path(path, "tabs", file))
+  ref <- read.csv(file.path(reference_path, "tabs", file))
   value <- c(H = "homoex", P = "polarex", D = "ext_grp")[[metric]]
   expected <- data.frame(
     event_id = as.character(ref$source_poll_id),

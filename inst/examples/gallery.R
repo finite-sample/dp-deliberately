@@ -2,8 +2,8 @@ library(deliberately)
 
 args <- commandArgs(trailingOnly = TRUE)
 source_path <- Sys.getenv(
-  "DELIBERATELY_SOURCE",
-  unset = if (length(args)) args[1] else "../distortions"
+  "DP_DATA_ROOT",
+  unset = if (length(args)) args[1] else "../dp-data"
 )
 dir.create("artifacts/gallery", recursive = TRUE, showWarnings = FALSE)
 education <- define_contrast(

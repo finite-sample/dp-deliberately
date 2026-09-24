@@ -145,13 +145,18 @@ argument during attendance, not proof of listening or persuasion.
 
 ## The distortions adapter
 
+Check out [dp-data v0.2.2](https://github.com/soodoku/dp-data/releases/tag/v0.2.2)
+beside this repository, or extract its source archive to `../dp-data`.
+
 ```r
-x <- read_distortions("../distortions")
+x <- read_distortions("../dp-data")
 x$provenance$ledger
 result <- audit_dp(x, config = audit_config(membership = "available"))
 ```
 
-The adapter uses the participant CSV and item dictionary, preserving the source's
+The adapter reads the frozen historical benchmarks from dp-data v0.2.2,
+verifying the bundled SHA-256 pins before import. Set `DP_DATA_ROOT` or pass the
+checkout/archive directory. It preserves the source's
 designated post wave. It removes logged exact duplicates, flags unresolved person
 IDs and retains raw values when correcting tiny endpoint roundoff. It imports no
 transcripts or inferred assignment mechanism. The R result includes input hashes
@@ -179,7 +184,7 @@ make document
 make ci
 make ci-docker
 make examples
-Rscript inst/examples/gallery.R ../distortions
+Rscript inst/examples/gallery.R ../dp-data
 make docs
 ```
 

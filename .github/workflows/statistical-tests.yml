@@ -16,9 +16,18 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          repository: soodoku/distortions
+          repository: soodoku/dp-distortions
           ref: ffd7aafb017c039726d95d61e90f13ca4521e317
+          path: artifacts/reference
+          sparse-checkout: tabs
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: soodoku/dp-data
+          ref: bce1e0e3aea578b71090dde5348ca66ccb778048
           path: artifacts/source
+          sparse-checkout: evidence/benchmarks
+          persist-credentials: false
       - uses: r-lib/actions/setup-r@d3c5be51b12e724e68f33216ca3c148b66d5f0b6 # v2
         with:
           use-public-rspm: true
@@ -26,7 +35,7 @@ jobs:
         with:
           extra-packages: local::.
       - name: Verify source results
-        run: Rscript inst/examples/verify-distortions.R artifacts/source
+        run: Rscript inst/examples/verify-distortions.R artifacts/source artifacts/reference
       - name: Install optional bootstrap backend
         shell: Rscript {0}
         run: |
